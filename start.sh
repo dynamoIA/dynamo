@@ -1,7 +1,5 @@
 #!/bin/bash
-
 # Install the project dependencies
-pnpm install
-
+npm install
 # Start the project
-pnpm start
+npm start
