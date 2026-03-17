@@ -1,5 +1,6 @@
 import { PermissionsBitField } from 'discord.js';
 import { getDB } from '../database/db.js';
+import { getConfig } from '../config/config-manager.js'; // 🔥 IMPORTANTE
 
 // 🔒 Anti-spam
 const cooldowns = new Map();
@@ -23,7 +24,7 @@ async function updateLevelRole(member, guildId, totalXp) {
             }
         }
 
-        // 🔥 Limpieza correcta de roles
+        // 🔥 Limpieza de roles anteriores
         const userRoles = levelRoles.filter(lr =>
             member.roles.cache.has(lr.role_id)
         );
@@ -43,9 +44,12 @@ async function updateLevelRole(member, guildId, totalXp) {
     }
 }
 
-export async function handleLevelup(message, config) {
+export async function handleLevelup(message) {
     try {
         if (!message || !message.guild || !message.member || message.author.bot) return;
+
+        // 🔥 CONFIG REAL DESDE DB
+        const config = await getConfig(message.guild.id);
 
         // ⏱️ Anti-spam
         const now = Date.now();
@@ -55,10 +59,7 @@ export async function handleLevelup(message, config) {
         cooldowns.set(message.author.id, now);
 
         const db = getDB();
-
-        // 🎯 XP controlado (puedes bajarlo luego)
         const xpGain = 10;
-
         const guildId = message.guild.id;
 
         let user = await db.get(
@@ -86,7 +87,7 @@ export async function handleLevelup(message, config) {
                 [newLevel, newTotalXp, message.author.id, guildId]
             ).catch(() => {});
 
-            // 📢 Canal seguro
+            // 📢 Canal seguro desde config
             let levCh = message.channel;
 
             if (config?.levels_channel_id) {
@@ -112,7 +113,7 @@ export async function handleLevelup(message, config) {
     }
 }
 
-export async function handleModeration(message, config) {
+export async function handleModeration(message) {
     try {
         if (!message.content.startsWith('!warn')) return;
 
