@@ -5,6 +5,14 @@
   "scripts": {
     "start": "node main.js"
   },
+  "dependencies": {
+    "discord.js": "^14.0.0",
+    "@discordjs/voice": "^0.16.0",
+    "dotenv": "^16.0.0",
+    "axios": "^1.0.0",
+    "ffmpeg-static": "^5.0.0",
+    "ytdl-core": "^4.11.0"
+  },
   "private": true,
   "devDependencies": {
     "typescript": "~5.9.2",
