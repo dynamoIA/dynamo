@@ -1,21 +1,21 @@
 import { EmbedBuilder, AuditLogEvent, PermissionsBitField, ChannelType } from 'discord.js';
-import { getConfig } from './config-manager.js';
+import { getConfig } from './config-manager.js'; // ruta correcta dentro de modules/
 
 // ─── Utilidades ────────────────────────────────────────────────────
 
-// 🔥 AHORA ASYNC
 async function getLogChannel(guild) {
     const cfg = await getConfig(guild.id);
     if (!cfg.logs_channel_id) return null;
     return guild.channels.cache.get(cfg.logs_channel_id) ?? null;
 }
 
-// 🔥 AHORA ASYNC (maneja todo internamente)
 async function send(guild, embed) {
     try {
         const ch = await getLogChannel(guild);
         if (ch) await ch.send({ embeds: [embed] });
-    } catch {}
+    } catch (err) {
+        console.error('Error enviando log:', err);
+    }
 }
 
 function base(color, title, guild) {
@@ -171,7 +171,7 @@ export async function onRoleDelete(role) {
     await send(role.guild, embed);
 }
 
-// (resto igual, solo await send en todos)
+// ─── Mensajes ─────────────────────────────────────────────────────
 
 export async function onMessageDelete(message) {
     if (!message.guild) return;
