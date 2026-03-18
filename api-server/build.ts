@@ -6,9 +6,7 @@ import { rm, readFile } from "fs/promises";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// server deps to bundle to reduce openat(2) syscalls
-// which helps cold start times without risking some
-// packages that are not bundle compatible
+// Lista de dependencias que sí se incluyen en el bundle
 const allowlist = [
   "@google/generative-ai",
   "axios",
@@ -35,29 +33,35 @@ const allowlist = [
   "xlsx",
   "zod",
   "zod-validation-error",
+  "discord.js" // ⚡ Incluimos discord.js para que los comandos funcionen
 ];
 
 async function buildAll() {
   const distDir = path.resolve(__dirname, "dist");
   await rm(distDir, { recursive: true, force: true });
 
-  console.log("building server...");
+  console.log("Building server...");
+
+  // Leer package.json para determinar dependencias
   const pkgPath = path.resolve(__dirname, "package.json");
   const pkg = JSON.parse(await readFile(pkgPath, "utf-8"));
   const allDeps = [
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.devDependencies || {}),
   ];
+
+  // Todas las dependencias que NO están en allowlist se marcan como externas
   const externals = allDeps.filter(
     (dep) =>
       !allowlist.includes(dep) &&
-      !(pkg.dependencies?.[dep]?.startsWith("workspace:")),
+      !(pkg.dependencies?.[dep]?.startsWith("workspace:"))
   );
 
+  // Bundle con esbuild
   await esbuild({
     entryPoints: [path.resolve(__dirname, "src/index.ts")],
-    platform: "node",
     bundle: true,
+    platform: "node",
     format: "cjs",
     outfile: path.resolve(distDir, "index.cjs"),
     define: {
@@ -66,10 +70,20 @@ async function buildAll() {
     minify: true,
     external: externals,
     logLevel: "info",
+    sourcemap: true,        // 🔹 útil para debugging
+    target: ["node18"],     // 🔹 ajustar según tu versión de Node
+    allowOverwrite: true,
+    loader: {
+      ".ts": "ts",
+      ".js": "js",
+      ".json": "json"
+    }
   });
+
+  console.log("Build completo ✅");
 }
 
 buildAll().catch((err) => {
-  console.error(err);
+  console.error("Error durante el build:", err);
   process.exit(1);
 });
