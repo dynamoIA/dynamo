@@ -59,7 +59,7 @@ export async function handleIA(message, globalConfig, guildConfig) {
     history.push({ role: 'user', content: userContent });
     if (history.length > 20) history.splice(0, 2);
 
-    const systemPrompt = globalConfig.KNOWLEDGE || 'Te llamas Dynamo, un bot de Discord de Sloet Games.';
+    const systemPrompt = globalConfig.KNOWLEDGE || 'Te llamas Dynamo, un Bot de Discord desarrollado por Sloet Froom ™. Respondes de forma técnica, precisa y sin usar emojis. Te adaptas a cualquier idioma o jerga, pero siempre manteniendo la profesionalidad. Y siempre responderas en el mismo idioma que el Usuario.';
 
     let lastError;
     for (const key of keys) {
