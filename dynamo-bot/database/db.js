@@ -1,80 +1,74 @@
-import { open } from 'sqlite';
-import sqlite3 from 'sqlite3';
+// database/db.js
+import pgPromise from 'pg-promise';
 
-let db;
+const pgp = pgPromise();
 
+// Configuración ajustada para Railway (producción) y Local (desarrollo)
+const connectionConfig = process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }, // Fundamental para que Railway no bloquee la conexión
+        max: 30
+      }
+    : {
+        host: process.env.PGHOST || 'localhost',
+        port: process.env.PGPORT || 5432,
+        database: process.env.PGDATABASE || 'dynamo',
+        user: process.env.PGUSER || 'user',
+        password: process.env.PGPASSWORD || 'pass',
+        max: 30
+      };
+
+const db = pgp(connectionConfig);
+
+// Inicializa las tablas si no existen
 export async function initDB() {
-    db = await open({
-        filename: './dynamo.db',
-        driver: sqlite3.Database
-    });
+    try {
+        await db.none(`
+            CREATE TABLE IF NOT EXISTS users (
+                user_id TEXT PRIMARY KEY,
+                username TEXT,
+                level INTEGER DEFAULT 0,
+                xp INTEGER DEFAULT 0,
+                warnings INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
 
-    await db.exec(`
-        CREATE TABLE IF NOT EXISTS users (
-            id         INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id    TEXT NOT NULL,
-            guild_id   TEXT NOT NULL,
-            username   TEXT,
-            level      INTEGER DEFAULT 1,
-            xp         INTEGER DEFAULT 0,
-            total_xp   INTEGER DEFAULT 0,
-            warnings   INTEGER DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(user_id, guild_id)
-        );
+            CREATE TABLE IF NOT EXISTS guild_config (
+                guild_id TEXT PRIMARY KEY,
+                welcome_enabled BOOLEAN DEFAULT TRUE,
+                autorole_id TEXT,
+                moderation_level TEXT DEFAULT 'medium',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
 
-        CREATE TABLE IF NOT EXISTS tickets (
-            id         INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id    TEXT NOT NULL,
-            guild_id   TEXT NOT NULL,
-            channel_id TEXT NOT NULL,
-            reason     TEXT,
-            status     TEXT DEFAULT 'open',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            closed_at  DATETIME
-        );
+            CREATE TABLE IF NOT EXISTS tickets (
+                id SERIAL PRIMARY KEY,
+                user_id TEXT,
+                guild_id TEXT,
+                channel_id TEXT,
+                reason TEXT,
+                status TEXT DEFAULT 'open',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                closed_at TIMESTAMP
+            );
 
-        CREATE TABLE IF NOT EXISTS guild_configs (
-            guild_id               TEXT PRIMARY KEY,
-            welcome_channel_id     TEXT,
-            exit_channel_id        TEXT,
-            autorole_id            TEXT,
-            ticket_category_id     TEXT,
-            ticket_channel_id      TEXT,
-            ticket_staff_roles     TEXT,
-            mod_role_id            TEXT,
-            logs_channel_id        TEXT,
-            levels_channel_id      TEXT,
-            music_channel_id       TEXT,
-            ia_enabled             INTEGER DEFAULT 1,
-            updated_at             DATETIME DEFAULT CURRENT_TIMESTAMP
-        );
+            CREATE TABLE IF NOT EXISTS logs (
+                id SERIAL PRIMARY KEY,
+                guild_id TEXT,
+                action TEXT,
+                user_id TEXT,
+                target_id TEXT,
+                details TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
 
-        CREATE TABLE IF NOT EXISTS level_roles (
-            id              INTEGER PRIMARY KEY AUTOINCREMENT,
-            guild_id        TEXT NOT NULL,
-            role_id         TEXT NOT NULL,
-            xp_required     INTEGER NOT NULL,
-            UNIQUE(guild_id, role_id)
-        );
-    `);
-
-    const migrations = [
-        'ALTER TABLE guild_configs ADD COLUMN logs_channel_id TEXT',
-        'ALTER TABLE guild_configs ADD COLUMN levels_channel_id TEXT',
-        'ALTER TABLE guild_configs ADD COLUMN music_channel_id TEXT',
-        'ALTER TABLE guild_configs ADD COLUMN ia_enabled INTEGER DEFAULT 1',
-        'ALTER TABLE users ADD COLUMN total_xp INTEGER DEFAULT 0',
-    ];
-    for (const sql of migrations) {
-        try { await db.run(sql); } catch { /* columna ya existe */ }
+        console.log('✅ Base de datos PostgreSQL inicializada');
+    } catch (err) {
+        console.error('❌ Error inicializando PostgreSQL:', err.message);
     }
-
-    console.log('[OK] Base de datos inicializada');
-    return db;
 }
 
-export function getDB() {
-    if (!db) throw new Error('DB no inicializada. Llama initDB() primero.');
-    return db;
-}
+// Exporta la instancia para usarla en todo el bot
+export { db };
