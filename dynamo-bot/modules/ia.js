@@ -98,7 +98,7 @@ export async function handleIA(message, globalConfig, guildConfig) {
                 },
                 body: JSON.stringify({
                     // 🔹 Punto 2: Modelo económico llama-3.1-8b-instant
-                    model: 'llama-3.1-70b-instant', 
+                    model: 'llama-3.1-8b-instant', 
                     messages: [ { role: 'system', content: systemPrompt }, ...history ],
                     // 🔹 Punto 3: Reducir límite de tokens a 300
                     max_tokens: 300, 
