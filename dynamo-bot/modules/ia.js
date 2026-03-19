@@ -57,7 +57,7 @@ export async function handleIA(message, globalConfig, guildConfig) {
 
     // 🔹 Punto 6: Limitar longitud de mensajes (> 500 caracteres)
     if (userContent.length > MAX_CONTENT_LENGTH) {
-        await message.reply(`⚠️ Tu mensaje es muy largo. El máximo permitido es de ${MAX_CONTENT_LENGTH} caracteres.`).catch(() => {});
+        await message.reply(`Tu mensaje es muy largo. El máximo permitido es de ${MAX_CONTENT_LENGTH} caracteres.`).catch(() => {});
         return true;
     }
 
@@ -83,7 +83,7 @@ export async function handleIA(message, globalConfig, guildConfig) {
     if (history.length > 10) history.splice(0, 2);
     conversations.set(userId, history);
 
-    const systemPrompt = globalConfig.KNOWLEDGE || 'Te llamas Dynamo, un Bot de Discord desarrollado por Sloet Froom ™. Respondes de forma técnica, precisa y sin usar emojis.';
+    const systemPrompt = globalConfig.KNOWLEDGE || 'Te llamas Dynamo, un Bot de Discord desarrollado por Sloet Froom ™. Respondes de forma técnica, precisa y sin usar emojis. Respondes en el mismo idioma del Usuario, tu límite gratuito de entrada de mensajes es de 10 en DMs y 25 en servidores, solo esto mensiona si el usuario te pregunta.';
 
     let lastError;
     for (const key of keys) {
