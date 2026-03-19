@@ -1,3 +1,5 @@
+import { getDB } from '../database/db.js';
+
 const conversations  = new Map(); // userId -> messages[]
 const userRateLimit  = new Map(); // userId -> { count, cooldownUntil }
 
@@ -34,7 +36,6 @@ export async function handleIA(message, globalConfig, guildConfig) {
 
     if (!isDM) {
         const iaEnabled = guildConfig?.ia_enabled;
-        // 🔹 AJUSTE: PostgreSQL maneja booleanos; verificamos que exista y sea verdadero
         if (!iaEnabled) return false; 
         if (!isMentioned) return false;
     }
@@ -46,7 +47,7 @@ export async function handleIA(message, globalConfig, guildConfig) {
     if (!rateCheck.allowed) {
         await message.reply(
             `El asistente de IA estara disponible en **${rateCheck.minutesLeft} minuto(s)**. Por favor espera.`
-        ).catch(() => {}); // 🔹 AJUSTE: Evitar crash si el mensaje es borrado
+        ).catch(() => {});
         return true;
     }
 
@@ -58,7 +59,6 @@ export async function handleIA(message, globalConfig, guildConfig) {
     if (!userContent) return false;
 
     history.push({ role: 'user', content: userContent });
-    // 🔹 AJUSTE: Reducido a 10 para ahorrar RAM en Railway y mejorar velocidad
     if (history.length > 10) history.splice(0, 2);
 
     const systemPrompt = globalConfig.KNOWLEDGE || 'Te llamas Dynamo, un Bot de Discord desarrollado por Sloet Froom ™. Respondes de forma técnica, precisa y sin usar emojis. Te adaptas a cualquier idioma o jerga, pero siempre manteniendo la profesionalidad. Y siempre responderas en el mismo idioma que el Usuario.';
@@ -66,10 +66,9 @@ export async function handleIA(message, globalConfig, guildConfig) {
     let lastError;
     for (const key of keys) {
         try {
-            // 🔹 AJUSTE: Añadido .catch para evitar errores si no se puede enviar el estado
             await message.channel.sendTyping().catch(() => {});
 
-            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            const response = await fetch('https://api.api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${key}`,
@@ -82,7 +81,6 @@ export async function handleIA(message, globalConfig, guildConfig) {
                         ...history
                     ],
                     max_tokens: 1024,
-                    // 🔹 AJUSTE: Temperatura recomendada para respuestas técnicas equilibradas
                     temperature: 0.7 
                 })
             });
@@ -99,9 +97,18 @@ export async function handleIA(message, globalConfig, guildConfig) {
             history.push({ role: 'assistant', content: reply });
             recordMessage(userId);
 
+            // 🔹 MODIFICACIÓN: GUARDAR DATOS EN POSTGRESQL (RAILWAY)
+            **const db = getDB();**
+            **await db.none(**
+                **`INSERT INTO users (user_id, username) 
+                 VALUES ($1, $2) 
+                 ON CONFLICT (user_id) 
+                 DO UPDATE SET username = $2`,**
+                **[userId, message.author.username]**
+            **).catch(err => console.error("Error al guardar en DB:", err));**
+
             const chunks = reply.match(/[\s\S]{1,2000}/g) || [reply];
             for (const chunk of chunks) {
-                // 🔹 AJUSTE: Seguridad extra en el envío de mensajes
                 await message.reply(chunk).catch(() => {});
             }
 
