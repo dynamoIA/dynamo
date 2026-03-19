@@ -350,17 +350,17 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// ─── Sistema de Logs Protegido (CON AWAIT) ──────────────────────────
-client.on('channelCreate',     async (ch)      => { if(Logs.onChannelCreate) await Logs.onChannelCreate(ch); });
-client.on('channelDelete',     async (ch)      => { if(Logs.onChannelDelete) await Logs.onChannelDelete(ch); });
-client.on('channelUpdate',     async (old, nw) => { if(Logs.onChannelUpdate) await Logs.onChannelUpdate(old, nw); });
-client.on('roleCreate',        async (role)    => { if(Logs.onRoleCreate)    await Logs.onRoleCreate(role); });
-client.on('roleDelete',        async (role)    => { if(Logs.onRoleDelete)    await Logs.onRoleDelete(role); });
-client.on('roleUpdate',        async (old, nw) => { if(Logs.onRoleUpdate)    await Logs.onRoleUpdate(old, nw); });
-client.on('guildUpdate',       async (old, nw) => { if(Logs.onGuildUpdate)   await Logs.onGuildUpdate(old, nw); });
-client.on('guildMemberUpdate', async (old, nw) => { if(Logs.onGuildMemberUpdate) await Logs.onGuildMemberUpdate(old, nw); });
-client.on('guildBanAdd',       async (ban)     => { if(Logs.onGuildBanAdd)   await Logs.onGuildBanAdd(ban); });
-client.on('messageDelete',     async (msg)     => { if(Logs.onMessageDelete) await Logs.onMessageDelete(msg); });
+// ─── Sistema de Logs Protegido ──────────────────────────────────────────
+client.on('channelCreate',     (ch)      => Logs.onChannelCreate?.(ch).catch(err => console.error('Error en logs channelCreate:', err)));
+client.on('channelDelete',     (ch)      => Logs.onChannelDelete?.(ch).catch(err => console.error('Error en logs channelDelete:', err)));
+client.on('channelUpdate',     (old, nw) => Logs.onChannelUpdate?.(old, nw).catch(err => console.error('Error en logs channelUpdate:', err)));
+client.on('roleCreate',        (role)    => Logs.onRoleCreate?.(role).catch(err => console.error('Error en logs roleCreate:', err)));
+client.on('roleDelete',        (role)    => Logs.onRoleDelete?.(role).catch(err => console.error('Error en logs roleDelete:', err)));
+client.on('roleUpdate',        (old, nw) => Logs.onRoleUpdate?.(old, nw).catch(err => console.error('Error en logs roleUpdate:', err)));
+client.on('guildUpdate',       (old, nw) => Logs.onGuildUpdate?.(old, nw).catch(err => console.error('Error en logs guildUpdate:', err)));
+client.on('guildMemberUpdate', (old, nw) => Logs.onGuildMemberUpdate?.(old, nw).catch(err => console.error('Error en logs guildMemberUpdate:', err)));
+client.on('guildBanAdd',       (ban)     => Logs.onGuildBanAdd?.(ban).catch(err => console.error('Error en logs guildBanAdd:', err)));
+client.on('messageDelete',     (msg)     => Logs.onMessageDelete?.(msg).catch(err => console.error('Error en logs messageDelete:', err)));
 
 // ─── Inicio ───────────────────────────────────────────────────────────
 (async () => {
