@@ -3,7 +3,6 @@ import {
     Client, GatewayIntentBits, Partials, ActivityType,
     REST, Routes, SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder
 } from 'discord.js';
-// dotenv no es necesario en Railway
 import express from 'express';
 import { initDB, getDB } from './database/db.js';
 import { loadAllGuildConfigs, initGuildConfig, getConfig, setConfig } from './modules/config-manager.js';
@@ -14,7 +13,7 @@ import { handleReaction } from './modules/voting.js';
 import { handleLevelup, handleModeration } from './modules/levels.js';
 import { handlePlay, handlePause, handleSkip, handleStop, handleQueue } from './modules/music.js';
 
-// Importación protegida de logs para evitar errores de SyntaxError si falta alguna exportación
+// Importación de logs
 import * as Logs from './modules/logs.js';
 
 const DYNAMO_PATH = './dynamo.sf';
@@ -187,7 +186,7 @@ const PORT = process.env.PORT || 5000;
 app.get('/', (_req, res) => res.send('Dynamo activo'));
 app.listen(PORT, '0.0.0.0', () => console.log(`[OK] Servidor de estado en puerto ${PORT}`));
 
-// ─── Ready (CORREGIDO: clientReady -> ready) ──────────────────────────
+// ─── Ready ───────────────────────────────────────────────────────────
 client.on('ready', async () => {
     console.log(`[OK] Dynamo activo: ${client.user.tag}`);
     client.user.setPresence({
@@ -199,15 +198,9 @@ client.on('ready', async () => {
 
     try {
         const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
-        await Promise.all(
-            [...client.guilds.cache.values()].map(guild =>
-                rest.put(
-                    Routes.applicationGuildCommands(client.user.id, guild.id),
-                    { body: slashCommands }
-                ).catch(err => console.error(`Error registrando comandos en ${guild.name}:`, err.message))
-            )
-        );
-        console.log(`[OK] Slash commands registrados en ${client.guilds.cache.size} servidor(es)`);
+        // Registro global para mayor eficiencia en Railway
+        await rest.put(Routes.applicationCommands(client.user.id), { body: slashCommands });
+        console.log(`[OK] Slash commands registrados globalmente`);
     } catch (error) {
         console.error('Error registrando slash commands:', error);
     }
@@ -221,12 +214,6 @@ client.on('ready', async () => {
 client.on('guildCreate', async (guild) => {
     console.log(`[OK] Dynamo añadido a: ${guild.name} (${guild.id})`);
     await initGuildConfig(guild.id);
-
-    const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
-    rest.put(
-        Routes.applicationGuildCommands(client.user.id, guild.id),
-        { body: slashCommands }
-    ).catch(err => console.error(`Error registrando comandos en ${guild.name}:`, err.message));
 });
 
 // ─── Slash commands handler ──────────────────────────────────────────
@@ -267,7 +254,7 @@ async function handleIACommand(interaction) {
 
 // ─── /config handler ────────────────────────────────────────────────
 async function handleConfigCommand(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    if (!interaction.deferred) await interaction.deferReply({ ephemeral: true });
     const sub     = interaction.options.getSubcommand();
     const guildId = interaction.guildId;
 
@@ -293,10 +280,10 @@ async function handleConfigCommand(interaction) {
                 { name: 'Niveles',           value: cfg.levels_channel_id   ? `<#${cfg.levels_channel_id}>`   : 'No configurado', inline: true },
                 { name: 'Logs',              value: cfg.logs_channel_id     ? `<#${cfg.logs_channel_id}>`     : 'No configurado', inline: true },
                 { name: 'Canal tickets',     value: cfg.ticket_channel_id   ? `<#${cfg.ticket_channel_id}>`   : 'No configurado', inline: true },
-                { name: 'Categoria tickets', value: cfg.ticket_category_id  || 'No configurado',               inline: true },
+                { name: 'Categoria tickets', value: cfg.ticket_category_id  || 'No configurado',                inline: true },
                 { name: 'Staff tickets',     value: cfg.ticket_staff_roles  ? `<@&${cfg.ticket_staff_roles}>` : 'No configurado', inline: true },
                 { name: 'Musica',            value: cfg.music_channel_id    ? `<#${cfg.music_channel_id}>`    : 'No configurado', inline: true },
-                { name: 'Autorole',          value: cfg.autorole_id         ? `<@&${cfg.autorole_id}>`        : 'No configurado', inline: true },
+                { name: 'Autorole',          value: cfg.autorole_id         ? `<@&${cfg.autorole_id}>`         : 'No configurado', inline: true },
                 { name: 'IA',                value: cfg.ia_enabled !== 0    ? 'Activa'                        : 'Desactivada',    inline: true },
                 { name: 'Roles de Nivel',    value: lrStr,                                                                        inline: false }
             );
@@ -344,18 +331,19 @@ async function handleConfigCommand(interaction) {
     await interaction.editReply(`**${sub}** actualizado correctamente.`);
 }
 
-// ─── Eventos de miembros ─────────────────────────────────────────────
-client.on('guildMemberAdd', (member) => {
+// ─── Eventos de miembros (ASINCRONOS PARA DB) ──────────────────────
+client.on('guildMemberAdd', async (member) => {
     if (member.user.bot) {
-        Logs.onNewBot?.(member);
+        if (Logs.onNewBot) await Logs.onNewBot(member);
     } else {
-        handleMemberJoin(member);
+        await handleMemberJoin(member);
     }
 });
-client.on('guildMemberRemove', (member) => handleMemberRemove(member));
+client.on('guildMemberRemove', async (member) => await handleMemberRemove(member));
 
 // ─── Reacciones ──────────────────────────────────────────────────────
 client.on('messageReactionAdd', async (reaction, user) => {
+    if (reaction.partial) await reaction.fetch();
     const config = await getConfig(reaction.message.guildId);
     handleReaction(reaction, user, config);
 });
@@ -363,7 +351,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 // ─── Mensajes ────────────────────────────────────────────────────────
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
-    const isDM         = message.channel.isDMBased();
+    const isDM           = message.channel.isDMBased();
     if (!isDM && !message.guild) return;
     const guildConfig  = isDM ? null : await getConfig(message.guild.id);
 
@@ -380,20 +368,24 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// ─── Sistema de Logs Protegido ──────────────────────────────────────────
-client.on('channelCreate',     (ch)       => Logs.onChannelCreate?.(ch));
-client.on('channelDelete',     (ch)       => Logs.onChannelDelete?.(ch));
-client.on('channelUpdate',     (old, nw)  => Logs.onChannelUpdate?.(old, nw));
-client.on('roleCreate',        (role)     => Logs.onRoleCreate?.(role));
-client.on('roleDelete',        (role)     => Logs.onRoleDelete?.(role));
-client.on('roleUpdate',        (old, nw)  => Logs.onRoleUpdate?.(old, nw));
-client.on('guildUpdate',       (old, nw)  => Logs.onGuildUpdate?.(old, nw));
-client.on('guildMemberUpdate', (old, nw)  => Logs.onGuildMemberUpdate?.(old, nw));
-client.on('guildBanAdd',       (ban)      => Logs.onGuildBanAdd?.(ban));
-client.on('messageDelete',     (msg)      => Logs.onMessageDelete?.(msg));
+// ─── Sistema de Logs Protegido (CON AWAIT) ──────────────────────────
+client.on('channelCreate',     async (ch)      => { if(Logs.onChannelCreate) await Logs.onChannelCreate(ch); });
+client.on('channelDelete',     async (ch)      => { if(Logs.onChannelDelete) await Logs.onChannelDelete(ch); });
+client.on('channelUpdate',     async (old, nw) => { if(Logs.onChannelUpdate) await Logs.onChannelUpdate(old, nw); });
+client.on('roleCreate',        async (role)    => { if(Logs.onRoleCreate)    await Logs.onRoleCreate(role); });
+client.on('roleDelete',        async (role)    => { if(Logs.onRoleDelete)    await Logs.onRoleDelete(role); });
+client.on('roleUpdate',        async (old, nw) => { if(Logs.onRoleUpdate)    await Logs.onRoleUpdate(old, nw); });
+client.on('guildUpdate',       async (old, nw) => { if(Logs.onGuildUpdate)   await Logs.onGuildUpdate(old, nw); });
+client.on('guildMemberUpdate', async (old, nw) => { if(Logs.onGuildMemberUpdate) await Logs.onGuildMemberUpdate(old, nw); });
+client.on('guildBanAdd',       async (ban)     => { if(Logs.onGuildBanAdd)   await Logs.onGuildBanAdd(ban); });
+client.on('messageDelete',     async (msg)     => { if(Logs.onMessageDelete) await Logs.onMessageDelete(msg); });
 
 // ─── Inicio ───────────────────────────────────────────────────────────
 (async () => {
-    await initDB();
-    client.login(process.env.BOT_TOKEN);
+    try {
+        await initDB();
+        await client.login(process.env.BOT_TOKEN);
+    } catch (err) {
+        console.error('Fallo crítico al iniciar el bot:', err);
+    }
 })();
