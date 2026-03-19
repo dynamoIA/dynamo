@@ -1,7 +1,7 @@
 import { getDB } from '../database/db.js';
 
-const conversations  = new Map(); // userId -> messages[]
-const userRateLimit  = new Map(); // userId -> { count, cooldownUntil }
+const conversations  = new Map(); // userId -> mensajes en memoria
+const userRateLimit  = new Map(); // userId -> límites de uso
 
 function getGroqKeys(config) {
     const raw = config.GROQ_KEYS || config.GROQ_KEY || '';
@@ -36,6 +36,7 @@ export async function handleIA(message, globalConfig, guildConfig) {
 
     if (!isDM) {
         const iaEnabled = guildConfig?.ia_enabled;
+        // 🔹 MODIFICACIÓN: Ajuste para valores NULL/FALSE de PostgreSQL
         if (!iaEnabled) return false; 
         if (!isMentioned) return false;
     }
@@ -59,6 +60,7 @@ export async function handleIA(message, globalConfig, guildConfig) {
     if (!userContent) return false;
 
     history.push({ role: 'user', content: userContent });
+    // 🔹 MODIFICACIÓN: Optimización de RAM para Railway
     if (history.length > 10) history.splice(0, 2);
 
     const systemPrompt = globalConfig.KNOWLEDGE || 'Te llamas Dynamo, un Bot de Discord desarrollado por Sloet Froom ™. Respondes de forma técnica, precisa y sin usar emojis. Te adaptas a cualquier idioma o jerga, pero siempre manteniendo la profesionalidad. Y siempre responderas en el mismo idioma que el Usuario.';
@@ -68,7 +70,8 @@ export async function handleIA(message, globalConfig, guildConfig) {
         try {
             await message.channel.sendTyping().catch(() => {});
 
-            const response = await fetch('https://api.api.groq.com/openai/v1/chat/completions', {
+            // 🔹 MODIFICACIÓN: URL corregida de Groq
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${key}`,
