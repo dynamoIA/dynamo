@@ -3,7 +3,8 @@
     "isolatedModules": true,
     "lib": ["es2022"],
     "module": "esnext",
-    "moduleResolution": "bundler",
+    // 1. Cambia 'bundler' por 'node' si corres el bot en un entorno Node estándar
+    "moduleResolution": "node", 
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": false,
@@ -19,7 +20,11 @@
     "alwaysStrict": true,
     "skipLibCheck": true,
     "target": "es2022",
-    "types": [],
-    "customConditions": ["workspace"]
+    // 2. IMPORTANTE: Permite que detecte los tipos de Node y Discord
+    "types": ["node"], 
+    "customConditions": ["workspace"],
+    // 3. Añade esto para que las referencias de proyecto funcionen bien
+    "composite": true,
+    "declaration": true
   }
 }
