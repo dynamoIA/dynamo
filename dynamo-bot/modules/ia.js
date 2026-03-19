@@ -34,7 +34,8 @@ export async function handleIA(message, globalConfig, guildConfig) {
 
     if (!isDM) {
         const iaEnabled = guildConfig?.ia_enabled;
-        if (iaEnabled === false) return false;
+        // 🔹 AJUSTE: PostgreSQL maneja booleanos; verificamos que exista y sea verdadero
+        if (!iaEnabled) return false; 
         if (!isMentioned) return false;
     }
 
@@ -45,7 +46,7 @@ export async function handleIA(message, globalConfig, guildConfig) {
     if (!rateCheck.allowed) {
         await message.reply(
             `El asistente de IA estara disponible en **${rateCheck.minutesLeft} minuto(s)**. Por favor espera.`
-        ).catch(() => {});
+        ).catch(() => {}); // 🔹 AJUSTE: Evitar crash si el mensaje es borrado
         return true;
     }
 
@@ -57,14 +58,16 @@ export async function handleIA(message, globalConfig, guildConfig) {
     if (!userContent) return false;
 
     history.push({ role: 'user', content: userContent });
-    if (history.length > 20) history.splice(0, 2);
+    // 🔹 AJUSTE: Reducido a 10 para ahorrar RAM en Railway y mejorar velocidad
+    if (history.length > 10) history.splice(0, 2);
 
     const systemPrompt = globalConfig.KNOWLEDGE || 'Te llamas Dynamo, un Bot de Discord desarrollado por Sloet Froom ™. Respondes de forma técnica, precisa y sin usar emojis. Te adaptas a cualquier idioma o jerga, pero siempre manteniendo la profesionalidad. Y siempre responderas en el mismo idioma que el Usuario.';
 
     let lastError;
     for (const key of keys) {
         try {
-            await message.channel.sendTyping();
+            // 🔹 AJUSTE: Añadido .catch para evitar errores si no se puede enviar el estado
+            await message.channel.sendTyping().catch(() => {});
 
             const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
@@ -78,24 +81,28 @@ export async function handleIA(message, globalConfig, guildConfig) {
                         { role: 'system', content: systemPrompt },
                         ...history
                     ],
-                    max_tokens: 1024
+                    max_tokens: 1024,
+                    // 🔹 AJUSTE: Temperatura recomendada para respuestas técnicas equilibradas
+                    temperature: 0.7 
                 })
             });
 
             if (!response.ok) {
-                const err = await response.json();
+                const err = await response.json().catch(() => ({}));
                 throw new Error(err.error?.message || 'Groq API error');
             }
 
             const data  = await response.json();
-            const reply = data.choices[0].message.content;
+            const reply = data.choices[0]?.message?.content;
+            if (!reply) throw new Error('Respuesta vacía de Groq');
 
             history.push({ role: 'assistant', content: reply });
             recordMessage(userId);
 
             const chunks = reply.match(/[\s\S]{1,2000}/g) || [reply];
             for (const chunk of chunks) {
-                await message.reply(chunk);
+                // 🔹 AJUSTE: Seguridad extra en el envío de mensajes
+                await message.reply(chunk).catch(() => {});
             }
 
             return true;
