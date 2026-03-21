@@ -255,3 +255,85 @@ export async function onNewBot(member) {
     );
   await send(member.guild, embed);
 }
+
+// ─── Eventos del Servidor y Miembros ─────────────────────────────
+
+export async function onGuildUpdate(oldGuild, newGuild) {
+  const changes = [];
+
+  if (oldGuild.name !== newGuild.name) {
+    changes.push({ name: 'Nombre', value: `\`${oldGuild.name}\` -> \`${newGuild.name}\``, inline: false });
+  }
+
+  if (oldGuild.verificationLevel !== newGuild.verificationLevel) {
+    changes.push({ name: 'Nivel de Verificación', value: `Modificado`, inline: true });
+  }
+
+  if (!changes.length) return;
+
+  const executor = await getAuditUser(newGuild, AuditLogEvent.GuildUpdate);
+  const embed = base('Servidor Actualizado', newGuild)
+    .addFields(...changes);
+
+  if (executor) {
+    embed.addFields({ name: 'Modificado por', value: `<@${executor.id}>`, inline: true });
+  }
+
+  await send(newGuild, embed);
+}
+
+export async function onGuildMemberUpdate(oldMember, newMember) {
+  if (!newMember.guild) return;
+  const changes = [];
+  let auditType = AuditLogEvent.MemberUpdate;
+
+  // Cambio de apodo
+  if (oldMember.nickname !== newMember.nickname) {
+    const oldNick = oldMember.nickname || oldMember.user.username;
+    const newNick = newMember.nickname || newMember.user.username;
+    changes.push({ name: 'Apodo', value: `\`${oldNick}\` -> \`${newNick}\``, inline: false });
+  }
+
+  // Cambio de roles
+  if (oldMember.roles.cache.size !== newMember.roles.cache.size) {
+    auditType = AuditLogEvent.MemberRoleUpdate;
+    
+    const oldRoles = oldMember.roles.cache.filter(r => r.id !== newMember.guild.id);
+    const newRoles = newMember.roles.cache.filter(r => r.id !== newMember.guild.id);
+
+    const addedRoles = newRoles.filter(role => !oldRoles.has(role.id));
+    const removedRoles = oldRoles.filter(role => !newRoles.has(role.id));
+
+    if (addedRoles.size > 0) {
+      changes.push({ name: 'Roles Añadidos', value: addedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
+    }
+    if (removedRoles.size > 0) {
+      changes.push({ name: 'Roles Removidos', value: removedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
+    }
+  }
+
+  // Aislamiento (Timeout)
+  if (oldMember.communicationDisabledUntilTimestamp !== newMember.communicationDisabledUntilTimestamp) {
+    if (newMember.isCommunicationDisabled()) {
+      const time = `<t:${Math.floor(newMember.communicationDisabledUntilTimestamp / 1000)}:R>`;
+      changes.push({ name: 'Aislamiento (Timeout)', value: `Aislado hasta ${time}`, inline: false });
+    } else {
+      changes.push({ name: 'Aislamiento (Timeout)', value: `Aislamiento removido`, inline: false });
+    }
+  }
+
+  if (!changes.length) return;
+
+  const executor = await getAuditUser(newMember.guild, auditType, newMember.id);
+
+  const embed = base('Miembro Actualizado', newMember.guild)
+    .setDescription(`**Usuario:** <@${newMember.id}> (\`${newMember.user.username}\`)`)
+    .setThumbnail(newMember.user.displayAvatarURL())
+    .addFields(...changes);
+
+  if (executor && executor.id !== newMember.id) {
+    embed.addFields({ name: 'Modificado por', value: `<@${executor.id}>`, inline: true });
+  }
+
+  await send(newMember.guild, embed);
+}
