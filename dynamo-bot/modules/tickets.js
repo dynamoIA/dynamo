@@ -18,8 +18,8 @@ export async function handleTicketCreation(message) {
   // Comando !close: verificar por ID en la BD
   if (message.content.toLowerCase() === '!close') {
     const db = getDB();
-    const isTicket = await db.get(
-      'SELECT id FROM tickets WHERE channel_id = ? AND status = ?',
+    const isTicket = await db.oneOrNone(
+      'SELECT id FROM tickets WHERE channel_id = $1 AND status = $2',
       [message.channel.id, 'open']
     ).catch(() => null);
 
@@ -45,8 +45,8 @@ export async function handleTicketCreation(message) {
 
   try {
     // Verificar si ya tiene un ticket abierto
-    const existing = await db.get(
-      'SELECT * FROM tickets WHERE user_id = ? AND guild_id = ? AND status = ?',
+    const existing = await db.oneOrNone(
+      'SELECT * FROM tickets WHERE user_id = $1 AND guild_id = $2 AND status = $3',
       [message.author.id, message.guild.id, 'open']
     ).catch(() => null);
 
@@ -65,8 +65,8 @@ export async function handleTicketCreation(message) {
       }
       
       // Si el canal ya no existe en Discord pero figura abierto en la DB, lo marcamos como cerrado
-      await db.run(
-        'UPDATE tickets SET status = ?, closed_at = CURRENT_TIMESTAMP WHERE id = ?',
+      await db.none(
+        'UPDATE tickets SET status = $1, closed_at = CURRENT_TIMESTAMP WHERE id = $2',
         ['closed', existing.id]
       ).catch(() => {});
     }
@@ -142,8 +142,8 @@ export async function handleTicketCreation(message) {
     message.delete().catch(() => {});
 
     // Guardar en Base de Datos
-    await db.run(
-      'INSERT INTO tickets (user_id, guild_id, channel_id, reason, status) VALUES (?, ?, ?, ?, ?)',
+    await db.none(
+      'INSERT INTO tickets (user_id, guild_id, channel_id, reason, status) VALUES ($1, $2, $3, $4, $5)',
       [message.author.id, message.guild.id, ticketChannel.id, reasonStr, 'open']
     );
 
@@ -177,8 +177,8 @@ async function closeTicket(message, config) {
     message.member.permissions.has(PermissionsBitField.Flags.ManageChannels) ||
     staffRoles.some(id => message.member.roles.cache.has(id));
 
-  const ticket = await db.get(
-    'SELECT * FROM tickets WHERE channel_id = ? AND status = ?',
+  const ticket = await db.oneOrNone(
+    'SELECT * FROM tickets WHERE channel_id = $1 AND status = $2',
     [message.channel.id, 'open']
   ).catch(() => null);
 
@@ -201,8 +201,8 @@ async function closeTicket(message, config) {
     .setTimestamp();
 
   try {
-    await db.run(
-      'UPDATE tickets SET status = ?, closed_at = CURRENT_TIMESTAMP WHERE channel_id = ?',
+    await db.none(
+      'UPDATE tickets SET status = $1, closed_at = CURRENT_TIMESTAMP WHERE channel_id = $2',
       ['closed', message.channel.id]
     );
     
