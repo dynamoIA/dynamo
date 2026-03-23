@@ -41,6 +41,7 @@ export async function initGuildConfig(guildId) {
     return config;
   } catch (err) {
     console.error(`Error en initGuildConfig para ${guildId}:`, err);
+    return { guild_id: guildId };
   }
 }
 
@@ -80,11 +81,11 @@ export async function setConfig(guildId, field, value) {
       throw new Error(`Campo inválido: ${field}`);
     }
     
+    // UPSERT: Inserta si no existe, actualiza si existe
     await db.none(
-      `UPDATE guild_configs 
-       SET ${field} = $1, updated_at = CURRENT_TIMESTAMP 
-       WHERE guild_id = $2`,
-      [value, guildId]
+      `INSERT INTO guild_configs (guild_id, ${field}) VALUES ($1, $2)
+       ON CONFLICT (guild_id) DO UPDATE SET ${field} = $2, updated_at = CURRENT_TIMESTAMP`,
+      [guildId, value]
     );
     
     // Refrescar cache con los datos actualizados
@@ -93,9 +94,12 @@ export async function setConfig(guildId, field, value) {
       [guildId]
     );
     
-    if (row) cache.set(guildId, row);
+    if (row) {
+      cache.set(guildId, row);
+    }
   } catch (err) {
     console.error(`Error en setConfig para ${guildId}:`, err);
+    throw err;
   }
 }
 
