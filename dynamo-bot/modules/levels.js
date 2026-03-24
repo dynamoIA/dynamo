@@ -47,7 +47,7 @@ export async function handleLevelup(message, config) {
   try {
     if (!message || !message.guild || !message.member || message.author.bot) return;
 
-    // ⏱️ Anti-spam: 1 mensaje por usuario cada 5 segundos
+    // Anti-spam: 1 mensaje por usuario cada 5 segundos
     const now = Date.now();
     const lastMsg = cooldowns.get(message.author.id) || 0;
 
@@ -56,7 +56,7 @@ export async function handleLevelup(message, config) {
 
     const db = getDB();
 
-    // 🎯 Mensajes = 1 XP por mensaje
+    // Mensajes = 1 XP por mensaje
     const xpGain = 1;
 
     const guildId = message.guild.id;
@@ -86,7 +86,10 @@ export async function handleLevelup(message, config) {
         [newLevel, newTotalXp, message.author.id, guildId]
       ).catch(() => {});
 
-      // 📢 Canal seguro
+      // Asignar rol de nivel automáticamente
+      await updateLevelRole(message.member, guildId, newTotalXp).catch(() => {});
+
+      // Canal seguro para el mensaje
       let levCh = message.channel;
 
       if (config?.levels_channel_id) {
@@ -94,8 +97,9 @@ export async function handleLevelup(message, config) {
         if (ch && ch.isTextBased()) levCh = ch;
       }
 
+      // Mensaje profesional sin emojis
       await levCh.send(
-        `🎉 **${message.author.username}** alcanzó el **Nivel ${newLevel}**! (${newTotalXp} XP totales)`
+        `Felicidades ${message.author.username}, has subido de Nivel ${user.level || 1} a Nivel ${newLevel}. Total de XP: ${newTotalXp}.`
       ).catch(() => {});
 
     } else {
@@ -104,8 +108,6 @@ export async function handleLevelup(message, config) {
         [newXp, newTotalXp, message.author.id, guildId]
       ).catch(() => {});
     }
-
-    await updateLevelRole(message.member, guildId, newTotalXp).catch(() => {});
 
   } catch (error) {
     console.error('Error en handleLevelup:', error);
