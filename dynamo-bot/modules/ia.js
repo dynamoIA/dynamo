@@ -18,13 +18,23 @@ function getGroqKeys(config) {
   return String(raw).split(',').map(k => k.trim()).filter(Boolean);
 }
 
+function formatTimeRemaining(milliseconds) {
+  const totalSeconds = Math.ceil(milliseconds / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}m ${seconds}s`;
+}
+
 function checkSpam(id, limit) {
   const now = Date.now();
   const data = userUsage.get(id) || { count: 0, cooldownUntil: 0 };
-  if (data.cooldownUntil > now) return { allowed: false };
+  if (data.cooldownUntil > now) {
+    const timeRemaining = data.cooldownUntil - now;
+    return { allowed: false, timeRemaining };
+  }
   if (data.count >= limit) {
     userUsage.set(id, { count: 0, cooldownUntil: now + (COOLDOWN_MINUTES * 60 * 1000) });
-    return { allowed: false };
+    return { allowed: false, timeRemaining: COOLDOWN_MINUTES * 60 * 1000 };
   }
   return { allowed: true };
 }
@@ -68,9 +78,10 @@ export async function handleIA(message, globalConfig, guildConfig) {
   const spamCheck = checkSpam(limitId, currentLimit);
 
   if (!spamCheck.allowed) {
+    const timeRemaining = formatTimeRemaining(spamCheck.timeRemaining);
     const msg = isDM 
-      ? `Has consumido el límite del plan Free, espere ${COOLDOWN_MINUTES} Minutos para continuar el chat.`
-      : `Se ha consumido el límite de mensajes en este servidor, espere ${COOLDOWN_MINUTES} Minutos.`;
+      ? `Has consumido el límite del plan Free. Espera ${timeRemaining} para continuar el chat.`
+      : `Se ha consumido el límite de mensajes en este servidor. Espera ${timeRemaining} para continuar.`;
     await message.reply(msg).catch(() => {});
     return true;
   }
