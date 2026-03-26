@@ -1,0 +1,19 @@
+{
+  "name": "dynamo-panel",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "start": "bun run src/index.ts",
+    "build": "echo 'No build needed'"
+  },
+  "dependencies": {
+    "elysia": "latest",
+    "@elysiajs/html": "latest",
+    "@elysiajs/static": "latest",
+    "@elysiajs/jwt": "latest",
+    "@elysiajs/cookie": "latest",
+    "@elysiajs/cors": "latest",
+    "postgres": "latest"
+  }
+}
