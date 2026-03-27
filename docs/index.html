@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="DynamoBot — El bot de Discord todo en uno. Música, tickets, bienvenidas, niveles, IA y logs para tu servidor." />
+  <meta name="theme-color" content="#5865F2" />
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="DynamoBot — El bot de Discord todo en uno" />
+  <meta property="og:description" content="Música, tickets, bienvenidas, niveles, IA y logs. Todo lo que tu servidor necesita en un solo bot." />
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://realdrivemultiplayer-droid.github.io/dynamo/" />
+
+  <title>DynamoBot — El bot de Discord todo en uno</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ─── Navbar ──────────────────────────────────────────────────── -->
+  <header id="navbar" class="navbar" role="banner">
+    <div class="navbar__inner">
+
+      <a href="#inicio" class="navbar__logo" aria-label="DynamoBot — Inicio">
+        <div class="navbar__logo-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        DynamoBot
+      </a>
+
+      <nav aria-label="Navegación principal">
+        <ul class="navbar__nav">
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#caracteristicas">Características</a></li>
+          <li><a href="#como-funciona">Cómo funciona</a></li>
+          <li><a href="#estadisticas">Estadísticas</a></li>
+        </ul>
+      </nav>
+
+      <div class="navbar__actions">
+        <a href="https://dynamo-panel.up.railway.app" target="_blank" rel="noopener noreferrer" class="btn btn--ghost btn--sm">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Panel
+        </a>
+        <a href="https://discord.com/oauth2/authorize?client_id=1482032015179255899&permissions=277436427318&integration_type=0&scope=bot" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn--sm">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14M5 12l7 7 7-7"/>
+          </svg>
+          Invitar
+        </a>
+      </div>
+
+      <button id="menuBtn" class="navbar__menu-btn" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenu">
+        <svg id="menuIconOpen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="3" y1="6"  x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        <svg id="menuIconClose" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
+          <line x1="18" y1="6"  x2="6"  y2="18"/>
+          <line x1="6"  y1="6"  x2="18" y2="18"/>
+        </svg>
+      </button>
+
+    </div>
+  </header>
+
+  <!-- ─── Mobile Menu ──────────────────────────────────────────────── -->
+  <nav id="mobileMenu" class="mobile-menu" aria-label="Menú móvil">
+    <a href="#inicio">Inicio</a>
+    <a href="#caracteristicas">Características</a>
+    <a href="#como-funciona">Cómo funciona</a>
+    <a href="#estadisticas">Estadísticas</a>
+    <div class="mobile-menu__divider" aria-hidden="true"></div>
+    <div class="mobile-menu__actions">
+      <a href="https://dynamo-panel.up.railway.app" target="_blank" rel="noopener noreferrer" class="btn btn--ghost">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Abrir Panel
+      </a>
+      <a href="https://discord.com/oauth2/authorize?client_id=1482032015179255899&permissions=277436427318&integration_type=0&scope=bot" target="_blank" rel="noopener noreferrer" class="btn btn--primary">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+        Invitar al servidor
+      </a>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ─── Hero ──────────────────────────────────────────────────── -->
+    <section id="inicio" class="hero" aria-labelledby="heroTitle">
+      <div class="hero__bg" aria-hidden="true">
+        <div class="hero__glow hero__glow--1"></div>
+        <div class="hero__glow hero__glow--2"></div>
+        <div class="hero__grid"></div>
+      </div>
+
+      <div class="hero__inner">
+        <div class="hero__content">
+          <div class="hero__badge">
+            <span class="hero__badge-dot" aria-hidden="true"></span>
+            Bot activo y en línea
+          </div>
+
+          <h1 id="heroTitle" class="hero__title">
+            El bot que tu<br />
+            servidor necesita,<br />
+            <span class="hero__title-accent">todo en uno</span>
+          </h1>
+
+          <p class="hero__description">
+            DynamoBot combina música, tickets de soporte, bienvenidas automáticas,
+            sistema de niveles, asistente de IA y logs completos en un único bot
+            fácil de configurar.
+          </p>
+
+          <div class="hero__actions">
+            <a href="https://discord.com/oauth2/authorize?client_id=1482032015179255899&permissions=277436427318&integration_type=0&scope=bot" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn--lg">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12l7 7 7-7"/>
+              </svg>
+              Añadir a Discord
+            </a>
+            <a href="https://dynamo-panel.up.railway.app" target="_blank" rel="noopener noreferrer" class="btn btn--ghost btn--lg">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              Ver Panel
+            </a>
+          </div>
+        </div>
+
+        <!-- Hero visual card -->
+        <div class="hero__visual" aria-hidden="true">
+          <div class="hero__card">
+            <div class="hero__card-header">
+              <div class="hero__card-avatar">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+              </div>
+              <div class="hero__card-info">
+                <div class="hero__card-name">DynamoBot</div>
+                <div class="hero__card-status">
+                  <span class="hero__card-status-dot"></span>
+                  En línea
+                </div>
+              </div>
+            </div>
+            <div class="hero__card-commands">
+              <div class="hero__card-cmd">
+                <div class="hero__card-cmd-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="18" r="3"/><circle cx="18" cy="15" r="3"/>
+                    <polyline points="12 18 12 2 21 5 21 15"/>
+                  </svg>
+                </div>
+                <span class="hero__card-cmd-text"><strong>/play</strong> lofi hip hop</span>
+              </div>
+              <div class="hero__card-cmd">
+                <div class="hero__card-cmd-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                    <path d="M13 5v2M13 17v2M13 11v2"/>
+                  </svg>
+                </div>
+                <span class="hero__card-cmd-text"><strong>/config</strong> ticket</span>
+              </div>
+              <div class="hero__card-cmd">
+                <div class="hero__card-cmd-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                    <polyline points="17 6 23 6 23 12"/>
+                  </svg>
+                </div>
+                <span class="hero__card-cmd-text"><strong>/config</strong> levels</span>
+              </div>
+              <div class="hero__card-cmd">
+                <div class="hero__card-cmd-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4Z"/>
+                    <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/>
+                    <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>
+                    <path d="M9 14s1 1 3 1 3-1 3-1"/>
+                  </svg>
+                </div>
+                <span class="hero__card-cmd-text"><strong>/ia</strong> enable</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Features ─────────────────────────────────────────────── -->
+    <section id="caracteristicas" class="features" aria-labelledby="featuresTitle">
+      <div class="container">
+        <div class="section-header reveal">
+          <span class="section-label">Características</span>
+          <h2 id="featuresTitle">Todo lo que necesitas,<br />sin complicaciones</h2>
+          <p>Seis módulos potentes, completamente configurables con comandos slash, listos para usar desde el primer minuto.</p>
+        </div>
+
+        <div class="features__grid">
+
+          <!-- Música -->
+          <article class="feature-card reveal reveal--delay-1">
+            <div class="feature-card__icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="18" r="3"/><circle cx="18" cy="15" r="3"/>
+                <polyline points="12 18 12 2 21 5 21 15"/>
+              </svg>
+            </div>
+            <h3 class="feature-card__title">Música de alta calidad</h3>
+            <p class="feature-card__desc">
+              Reproduce cualquier canción desde YouTube con <code>/play</code>. Gestiona la cola, pausa, salta pistas y desconecta el bot con comandos slash intuitivos.
+            </p>
+          </article>
+
+          <!-- Tickets -->
+          <article class="feature-card reveal reveal--delay-2">
+            <div class="feature-card__icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                <path d="M13 5v2M13 17v2M13 11v2"/>
+              </svg>
+            </div>
+            <h3 class="feature-card__title">Sistema de tickets</h3>
+            <p class="feature-card__desc">
+              Crea canales privados de soporte automáticamente. Los usuarios abren tickets escribiendo en el canal configurado y el staff los gestiona con permisos dedicados.
+            </p>
+          </article>
+
+          <!-- Bienvenidas -->
+          <article class="feature-card reveal reveal--delay-3">
+            <div class="feature-card__icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <line x1="19" y1="8" x2="19" y2="14"/>
+                <line x1="22" y1="11" x2="16" y2="11"/>
+              </svg>
+            </div>
+            <h3 class="feature-card__title">Bienvenidas automáticas</h3>
+            <p class="feature-card__desc">
+              Recibe a cada nuevo miembro con un mensaje personalizado. Configura canales de bienvenida y salida, y asigna roles automáticos al entrar al servidor.
+            </p>
+          </article>
+
+          <!-- Niveles -->
+          <article class="feature-card reveal reveal--delay-1">
+            <div class="feature-card__icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+              </svg>
+            </div>
+            <h3 class="feature-card__title">Sistema de niveles y XP</h3>
+            <p class="feature-card__desc">
+              Recompensa la actividad de tu comunidad con XP. Asigna roles automáticamente al alcanzar ciertos umbrales y anuncia los ascensos en el canal que elijas.
+            </p>
+          </article>
+
+          <!-- IA -->
+          <article class="feature-card reveal reveal--delay-2">
+            <div class="feature-card__icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4Z"/>
+                <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/>
+                <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>
+                <path d="M9 14s1 1 3 1 3-1 3-1"/>
+              </svg>
+            </div>
+            <h3 class="feature-card__title">Asistente de IA</h3>
+            <p class="feature-card__desc">
+              Activa un asistente inteligente en tu servidor con <code>/ia enable</code>. Responde preguntas, ayuda a los miembros y enriquece la experiencia de tu comunidad.
+            </p>
+          </article>
+
+          <!-- Logs -->
+          <article class="feature-card reveal reveal--delay-3">
+            <div class="feature-card__icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <line x1="10" y1="9"  x2="8" y2="9"/>
+              </svg>
+            </div>
+            <h3 class="feature-card__title">Logs completos</h3>
+            <p class="feature-card__desc">
+              Registra automáticamente creación y eliminación de canales, roles, bans, mensajes borrados y más. Mantén el control total de lo que ocurre en tu servidor.
+            </p>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── How it works ─────────────────────────────────────────── -->
+    <section id="como-funciona" class="how-it-works" aria-labelledby="howTitle">
+      <div class="container">
+        <div class="section-header reveal">
+          <span class="section-label">Cómo funciona</span>
+          <h2 id="howTitle">En marcha en tres pasos</h2>
+          <p>Configurar DynamoBot es rápido y sencillo. Sin archivos de configuración, sin complicaciones.</p>
+        </div>
+
+        <div class="steps">
+          <div class="step reveal reveal--delay-1">
+            <div class="step__number" aria-hidden="true">1</div>
+            <h3 class="step__title">Invita el bot</h3>
+            <p class="step__desc">
+              Haz clic en "Añadir a Discord" y selecciona el servidor donde quieres instalar DynamoBot. Los permisos necesarios se configuran automáticamente.
+            </p>
+          </div>
+
+          <div class="step reveal reveal--delay-2">
+            <div class="step__number" aria-hidden="true">2</div>
+            <h3 class="step__title">Configura los módulos</h3>
+            <p class="step__desc">
+              Usa <code>/config</code> para asignar canales a cada función: bienvenidas, tickets, niveles, logs y música. Todo desde Discord, sin salir del servidor.
+            </p>
+          </div>
+
+          <div class="step reveal reveal--delay-3">
+            <div class="step__number" aria-hidden="true">3</div>
+            <h3 class="step__title">Gestiona desde el panel</h3>
+            <p class="step__desc">
+              Accede al panel web para una visión completa de tu servidor. Monitorea estadísticas, revisa tickets y ajusta la configuración desde cualquier dispositivo.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Stats ─────────────────────────────────────────────────── -->
+    <section id="estadisticas" class="stats" aria-labelledby="statsTitle">
+      <div class="container">
+        <div class="section-header reveal">
+          <span class="section-label">Estadísticas</span>
+          <h2 id="statsTitle">Construido para escalar</h2>
+          <p>DynamoBot está diseñado para crecer junto a tu comunidad, con rendimiento y estabilidad en mente.</p>
+        </div>
+
+        <div class="stats__grid">
+          <div class="stat-card reveal reveal--delay-1">
+            <div class="stat-card__value" data-count="6" data-suffix="+" aria-label="Más de 6 módulos">
+              6+
+            </div>
+            <div class="stat-card__label">Módulos activos</div>
+          </div>
+
+          <div class="stat-card reveal reveal--delay-2">
+            <div class="stat-card__value" data-count="15" data-suffix="+" aria-label="Más de 15 comandos slash">
+              15+
+            </div>
+            <div class="stat-card__label">Comandos slash</div>
+          </div>
+
+          <div class="stat-card reveal reveal--delay-3">
+            <div class="stat-card__value" data-count="24" data-suffix="/7" aria-label="Disponible 24/7">
+              24/7
+            </div>
+            <div class="stat-card__label">Disponibilidad</div>
+          </div>
+
+          <div class="stat-card reveal reveal--delay-4">
+            <div class="stat-card__value" data-count="0" data-suffix="€" aria-label="Gratis">
+              0€
+            </div>
+            <div class="stat-card__label">Coste de uso</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── CTA ───────────────────────────────────────────────────── -->
+    <section class="cta" aria-labelledby="ctaTitle">
+      <div class="container">
+        <div class="cta__inner reveal">
+          <h2 id="ctaTitle">¿Listo para potenciar<br />tu servidor?</h2>
+          <p>Únete a los servidores que ya usan DynamoBot. Gratis, sin límites, sin complicaciones.</p>
+          <div class="cta__actions">
+            <a href="https://discord.com/oauth2/authorize?client_id=1482032015179255899&permissions=277436427318&integration_type=0&scope=bot" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn--lg">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12l7 7 7-7"/>
+              </svg>
+              Añadir a Discord
+            </a>
+            <a href="https://dynamo-panel.up.railway.app" target="_blank" rel="noopener noreferrer" class="btn btn--ghost btn--lg">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              Abrir Panel
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ─── Footer ───────────────────────────────────────────────────── -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer__inner">
+
+        <div class="footer__brand">
+          <div class="footer__logo">
+            <div class="footer__logo-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
+            DynamoBot
+          </div>
+          <p class="footer__tagline">
+            El bot de Discord todo en uno. Música, tickets, niveles, IA y más para tu comunidad.
+          </p>
+        </div>
+
+        <div>
+          <p class="footer__col-title">Producto</p>
+          <ul class="footer__links">
+            <li><a href="#caracteristicas">Características</a></li>
+            <li><a href="#como-funciona">Cómo funciona</a></li>
+            <li><a href="#estadisticas">Estadísticas</a></li>
+            <li><a href="https://dynamo-panel.up.railway.app" target="_blank" rel="noopener noreferrer">Panel de control</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="footer__col-title">Acceso rápido</p>
+          <ul class="footer__links">
+            <li>
+              <a href="https://discord.com/oauth2/authorize?client_id=1482032015179255899&permissions=277436427318&integration_type=0&scope=bot" target="_blank" rel="noopener noreferrer">
+                Invitar el bot
+              </a>
+            </li>
+            <li>
+              <a href="https://dynamo-panel.up.railway.app" target="_blank" rel="noopener noreferrer">
+                Abrir panel
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/realdrivemultiplayer-droid/dynamo" target="_blank" rel="noopener noreferrer">
+                Repositorio
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p class="footer__copy">
+          &copy; <span id="year"></span> DynamoBot. Construido con
+          <a href="https://discord.js.org" target="_blank" rel="noopener noreferrer">discord.js</a>
+          y desplegado en
+          <a href="https://railway.app" target="_blank" rel="noopener noreferrer">Railway</a>.
+        </p>
+        <nav class="footer__legal" aria-label="Legal">
+          <a href="#">Privacidad</a>
+          <a href="#">Términos</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // Set current year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>
