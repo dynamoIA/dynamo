@@ -127,7 +127,7 @@ export async function handleTicketCreation(message) {
     const reasonStr = message.content || 'Sin especificar';
 
     const embed = new EmbedBuilder()
-      .setColor('#FF8C00')
+      .setColor('#c816f0')
       .setTitle('Ticket Abierto')
       .setThumbnail(message.author.displayAvatarURL({ size: 64, extension: 'png' }))
       .setDescription(
@@ -192,7 +192,7 @@ async function closeTicket(message, config) {
   }
 
   const embed = new EmbedBuilder()
-    .setColor('#FF4444')
+    .setColor('#c816f0')
     .setTitle('Ticket Cerrado')
     .setDescription(
       `Ticket cerrado por <@${message.author.id}>.\n` +
