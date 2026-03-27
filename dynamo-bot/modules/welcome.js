@@ -28,7 +28,7 @@ export async function handleMemberJoin(member) {
 
       if (channel && channel.isTextBased()) {
         const embed = new EmbedBuilder()
-          .setColor('#1E90FF') // Azul brillante
+          .setColor('#c816f0') // Azul brillante
           .setTitle('Bienvenido al servidor')
           .setDescription(
             `Hola ${member.user.username}, nos alegra tenerte aquí.\n\n` +
@@ -76,7 +76,7 @@ export async function handleMemberRemove(member) {
 
     if (channel && channel.isTextBased()) {
       const embed = new EmbedBuilder()
-        .setColor('#FF4444') // Rojo suave
+        .setColor('#c816f0') // Rojo suave
         .setTitle('Hasta luego')
         .setDescription(`${member.user.username} ha abandonado el servidor.`)
         .setThumbnail(member.user.displayAvatarURL({ size: 256, extension: 'png' }))
