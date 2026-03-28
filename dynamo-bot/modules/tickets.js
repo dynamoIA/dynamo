@@ -56,7 +56,7 @@ export async function handleTicketCreation(message) {
       
       if (existingChannel) {
         const warn = await message.reply({
-          content: `Ya tienes un ticket abierto en <#${existing.channel_id}>. Escribe \`!close\` ahí para cerrarlo primero.`
+          content: `You already have an open ticket in <#${existing.channel_id}>. Type \`!close\` there to close it first.`
         }).catch(() => null);
 
         if (warn) setTimeout(() => warn.delete().catch(() => {}), 7000);
@@ -131,11 +131,11 @@ export async function handleTicketCreation(message) {
       .setTitle('Ticket Abierto')
       .setThumbnail(message.author.displayAvatarURL({ size: 64, extension: 'png' }))
       .setDescription(
-        `Hola <@${message.author.id}>, el equipo de soporte atenderá tu solicitud en breve.\n\n` +
-        `**Motivo:** ${reasonStr}\n` +
-        `**Fecha:** ${dateStr} — **Hora:** ${timeStr}`
+        `Hello <@${message.author.id}>, The moderators will come to help you soon.\n\n` +
+        `**Reason:** ${reasonStr}\n` +
+        `**Date:** ${dateStr} — **Hour:** ${timeStr}`
       )
-      .setFooter({ text: 'Escribe !close para cerrar este ticket.' })
+      .setFooter({ text: 'Type !close to close this ticket.' })
       .setTimestamp();
 
     await ticketChannel.send({ content: `<@${message.author.id}>`, embeds: [embed] });
@@ -152,9 +152,9 @@ export async function handleTicketCreation(message) {
 
   } catch (error) {
     console.error(`[${message.guild.name}] Error creando ticket:`, error.code, error.message);
-    let errorMsg = 'Ocurrió un error al crear tu ticket. Contacta a un administrador.';
-    if (error.code === 50013) errorMsg = 'El bot no tiene el permiso **Gestionar Canales**.';
-    if (error.code === 50001) errorMsg = 'El bot no tiene acceso a la categoría de tickets.';
+    let errorMsg = 'An error occurred while creating your ticket. Please contact an administrator.';
+    if (error.code === 50013) errorMsg = 'The bot does not have the **Manage Channels** permission.';
+    if (error.code === 50001) errorMsg = 'The bot does not have access to the tickets category.';
     
     message.channel.send(errorMsg)
       .then(m => setTimeout(() => m.delete().catch(() => {}), 5000))
@@ -185,7 +185,7 @@ async function closeTicket(message, config) {
   const isOwner = ticket?.user_id === message.author.id;
 
   if (!isStaff && !isOwner) {
-    message.reply('No tienes permiso para cerrar este ticket.')
+    message.reply('You do not have permission to close this ticket.')
       .then(w => setTimeout(() => w.delete().catch(() => {}), 5000))
       .catch(() => {});
     return;
@@ -195,8 +195,8 @@ async function closeTicket(message, config) {
     .setColor('#dd1414')
     .setTitle('Ticket Cerrado')
     .setDescription(
-      `Ticket cerrado por <@${message.author.id}>.\n` +
-      `Este canal se eliminará en **5 segundos**.`
+      `Ticket closed by <@${message.author.id}>.\n` +
+      `This channel will be deleted in **5 seconds**.`
     )
     .setTimestamp();
 
