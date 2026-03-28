@@ -27,7 +27,7 @@ async function getLogChannel(guild) {
     
     return null;
   } catch (error) {
-    console.error(`[LOGS ERROR] Error al obtener canal en ${guild.name}:`, error.message);
+    console.error(`[LOGS ERROR] Error obtaining channel in ${guild.name}:`, error.message);
     return null;
   }
 }
@@ -42,7 +42,7 @@ async function send(guild, embed) {
       await ch.send({ embeds: [embed] });
     }
   } catch (err) {
-    console.error(`[LOG SEND ERROR] Fallo al enviar en ${guild.name}:`, err.message);
+    console.error(`[LOG SEND ERROR] Failure to send in ${guild.name}:`, err.message);
   }
 }
 
@@ -98,15 +98,15 @@ function formatPerms(list) {
 
 function channelTypeName(type) {
   const names = {
-    [ChannelType.GuildText]: 'Texto',
-    [ChannelType.GuildVoice]: 'Voz',
-    [ChannelType.GuildCategory]: 'Categoría',
-    [ChannelType.GuildAnnouncement]: 'Anuncios',
-    [ChannelType.GuildForum]: 'Foro',
-    [ChannelType.GuildStageVoice]: 'Escenario',
-    [ChannelType.GuildThread]: 'Hilo',
+    [ChannelType.GuildText]: 'Text',
+    [ChannelType.GuildVoice]: 'Voice',
+    [ChannelType.GuildCategory]: 'Category',
+    [ChannelType.GuildAnnouncement]: 'Advertisements',
+    [ChannelType.GuildForum]: 'Forum',
+    [ChannelType.GuildStageVoice]: 'Scenery',
+    [ChannelType.GuildThread]: 'Thread',
   };
-  return names[type] ?? 'Desconocido';
+  return names[type] ?? 'A stranger';
 }
 
 // ─── Eventos de Canales ───────────────────────────────────────────
@@ -117,12 +117,12 @@ export async function onChannelCreate(channel) {
 
   const embed = base('Canal Creado', channel.guild)
     .addFields(
-      { name: 'Canal', value: `<#${channel.id}> (\`${channel.name}\`)`, inline: true },
-      { name: 'Tipo', value: channelTypeName(channel.type), inline: true },
-      { name: 'Creado por', value: executor ? `<@${executor.id}>` : 'Desconocido', inline: true }
+      { name: 'Channel', value: `<#${channel.id}> (\`${channel.name}\`)`, inline: true },
+      { name: 'Guy', value: channelTypeName(channel.type), inline: true },
+      { name: 'Created by', value: executor ? `<@${executor.id}>` : 'A stranger', inline: true }
     );
 
-  if (channel.parent) embed.addFields({ name: 'Categoría', value: channel.parent.name, inline: true });
+  if (channel.parent) embed.addFields({ name: 'Category', value: channel.parent.name, inline: true });
   await send(channel.guild, embed);
 }
 
@@ -132,9 +132,9 @@ export async function onChannelDelete(channel) {
 
   const embed = base('Canal Eliminado', channel.guild)
     .addFields(
-      { name: 'Canal', value: `\`#${channel.name}\``, inline: true },
-      { name: 'Tipo', value: channelTypeName(channel.type), inline: true },
-      { name: 'Eliminado por', value: executor ? `<@${executor.id}>` : 'Desconocido', inline: true }
+      { name: 'Channel', value: `\`#${channel.name}\``, inline: true },
+      { name: 'Guy', value: channelTypeName(channel.type), inline: true },
+      { name: 'removed by', value: executor ? `<@${executor.id}>` : 'A stranger', inline: true }
     );
 
   await send(channel.guild, embed);
@@ -145,25 +145,25 @@ export async function onChannelUpdate(oldCh, newCh) {
   const changes = [];
 
   if (oldCh.name !== newCh.name)
-    changes.push({ name: 'Nombre', value: `\`${oldCh.name}\` -> \`${newCh.name}\``, inline: false });
+    changes.push({ name: 'Name', value: `\`${oldCh.name}\` -> \`${newCh.name}\``, inline: false });
 
   if (oldCh.topic !== newCh.topic)
-    changes.push({ name: 'Descripción', value: `\`${oldCh.topic || '-'}\` -> \`${newCh.topic || '-'}\``, inline: false });
+    changes.push({ name: 'Description', value: `\`${oldCh.topic || '-'}\` -> \`${newCh.topic || '-'}\``, inline: false });
 
   if (oldCh.rateLimitPerUser !== newCh.rateLimitPerUser)
     changes.push({ name: 'Slowmode', value: `${oldCh.rateLimitPerUser}s -> ${newCh.rateLimitPerUser}s`, inline: true });
 
   if (oldCh.nsfw !== newCh.nsfw)
-    changes.push({ name: 'NSFW', value: `${oldCh.nsfw ? 'Sí' : 'No'} -> ${newCh.nsfw ? 'Sí' : 'No'}`, inline: true });
+    changes.push({ name: 'NSFW', value: `${oldCh.nsfw ? 'Yes' : 'No'} -> ${newCh.nsfw ? 'Yes' : 'No'}`, inline: true });
 
   if (!changes.length) return;
 
   const executor = await getAuditUser(newCh.guild, AuditLogEvent.ChannelUpdate, newCh.id);
-  const embed = base('Canal Modificado', newCh.guild)
-    .setDescription(`**Canal:** <#${newCh.id}> (\`${newCh.name}\`)`)
+  const embed = base('Modified Channel', newCh.guild)
+    .setDescription(`**Channel:** <#${newCh.id}> (\`${newCh.name}\`)`)
     .addFields(...changes);
 
-  if (executor) embed.addFields({ name: 'Modificado por', value: `<@${executor.id}>`, inline: true });
+  if (executor) embed.addFields({ name: 'Modified by', value: `<@${executor.id}>`, inline: true });
   await send(newCh.guild, embed);
 }
 
@@ -175,7 +175,7 @@ export async function onRoleCreate(role) {
     .addFields(
       { name: 'Rol', value: `<@&${role.id}> (\`${role.name}\`)`, inline: true },
       { name: 'Color', value: role.hexColor || 'Por defecto', inline: true },
-      { name: 'Creado por', value: executor ? `<@${executor.id}>` : 'Desconocido', inline: true }
+      { name: 'Created by', value: executor ? `<@${executor.id}>` : 'A stranger', inline: true }
     );
   await send(role.guild, embed);
 }
@@ -185,7 +185,7 @@ export async function onRoleDelete(role) {
   const embed = base('Rol Eliminado', role.guild)
     .addFields(
       { name: 'Rol', value: `\`${role.name}\``, inline: true },
-      { name: 'Eliminado por', value: executor ? `<@${executor.id}>` : 'Desconocido', inline: true }
+      { name: 'removed by', value: executor ? `<@${executor.id}>` : 'A stranger', inline: true }
     );
   await send(role.guild, embed);
 }
@@ -194,14 +194,14 @@ export async function onRoleUpdate(oldRole, newRole) {
   const changes = [];
 
   if (oldRole.name !== newRole.name)
-    changes.push({ name: 'Nombre', value: `\`${oldRole.name}\` -> \`${newRole.name}\``, inline: true });
+    changes.push({ name: 'Name', value: `\`${oldRole.name}\` -> \`${newRole.name}\``, inline: true });
 
   if (oldRole.hexColor !== newRole.hexColor)
     changes.push({ name: 'Color', value: `\`${oldRole.hexColor}\` -> \`${newRole.hexColor}\``, inline: true });
 
   const { added, removed } = permDiff(oldRole.permissions, newRole.permissions);
-  if (added.length) changes.push({ name: 'Permisos Añadidos', value: formatPerms(added), inline: false });
-  if (removed.length) changes.push({ name: 'Permisos Removidos', value: formatPerms(removed), inline: false });
+  if (added.length) changes.push({ name: 'Permissions Added', value: formatPerms(added), inline: false });
+  if (removed.length) changes.push({ name: 'Permissions Removed', value: formatPerms(removed), inline: false });
 
   if (!changes.length) return;
 
@@ -210,7 +210,7 @@ export async function onRoleUpdate(oldRole, newRole) {
     .setDescription(`**Rol:** <@&${newRole.id}> (\`${newRole.name}\`)`)
     .addFields(...changes);
 
-  if (executor) embed.addFields({ name: 'Modificado por', value: `<@${executor.id}>`, inline: true });
+  if (executor) embed.addFields({ name: 'Modified by', value: `<@${executor.id}>`, inline: true });
   await send(newRole.guild, embed);
 }
 
@@ -224,9 +224,9 @@ export async function onMessageDelete(message) {
 
   const embed = base('Mensaje Eliminado', message.guild)
     .addFields(
-      { name: 'Canal', value: `<#${message.channelId}>`, inline: true },
-      { name: 'Autor', value: message.author ? `<@${message.author.id}>` : 'Desconocido', inline: true },
-      { name: 'Contenido', value: content, inline: false }
+      { name: 'Channel', value: `<#${message.channelId}>`, inline: true },
+      { name: 'Author', value: message.author ? `<@${message.author.id}>` : 'Desconocido', inline: true },
+      { name: 'Content', value: content, inline: false }
     );
 
   if (executor) embed.addFields({ name: 'Eliminado por', value: `<@${executor.id}>`, inline: true });
@@ -239,9 +239,9 @@ export async function onGuildBanAdd(ban) {
   const executor = await getAuditUser(ban.guild, AuditLogEvent.MemberBanAdd, ban.user.id);
   const embed = base('Miembro Baneado', ban.guild)
     .addFields(
-      { name: 'Usuario', value: `<@${ban.user.id}> (\`${ban.user.username}\`)`, inline: true },
-      { name: 'Baneado por', value: executor ? `<@${executor.id}>` : 'Desconocido', inline: true },
-      { name: 'Razón', value: ban.reason || 'Sin especificar', inline: false }
+      { name: 'User', value: `<@${ban.user.id}> (\`${ban.user.username}\`)`, inline: true },
+      { name: 'Banned by', value: executor ? `<@${executor.id}>` : 'Desconocido', inline: true },
+      { name: 'Reason', value: ban.reason || 'Unspecified', inline: false }
     );
   await send(ban.guild, embed);
 }
@@ -251,7 +251,7 @@ export async function onNewBot(member) {
   const embed = base('Nuevo Bot Añadido', member.guild)
     .addFields(
       { name: 'Bot', value: `<@${member.id}> (\`${member.user.username}\`)`, inline: true },
-      { name: 'Añadido por', value: executor ? `<@${executor.id}>` : 'Desconocido', inline: true }
+      { name: 'Added by', value: executor ? `<@${executor.id}>` : 'A stranger', inline: true }
     );
   await send(member.guild, embed);
 }
@@ -262,21 +262,21 @@ export async function onGuildUpdate(oldGuild, newGuild) {
   const changes = [];
 
   if (oldGuild.name !== newGuild.name) {
-    changes.push({ name: 'Nombre', value: `\`${oldGuild.name}\` -> \`${newGuild.name}\``, inline: false });
+    changes.push({ name: 'Name', value: `\`${oldGuild.name}\` -> \`${newGuild.name}\``, inline: false });
   }
 
   if (oldGuild.verificationLevel !== newGuild.verificationLevel) {
-    changes.push({ name: 'Nivel de Verificación', value: `Modificado`, inline: true });
+    changes.push({ name: 'Verification Level', value: `Modified`, inline: true });
   }
 
   if (!changes.length) return;
 
   const executor = await getAuditUser(newGuild, AuditLogEvent.GuildUpdate);
-  const embed = base('Servidor Actualizado', newGuild)
+  const embed = base('Updated Server', newGuild)
     .addFields(...changes);
 
   if (executor) {
-    embed.addFields({ name: 'Modificado por', value: `<@${executor.id}>`, inline: true });
+    embed.addFields({ name: 'Modified by', value: `<@${executor.id}>`, inline: true });
   }
 
   await send(newGuild, embed);
@@ -291,7 +291,7 @@ export async function onGuildMemberUpdate(oldMember, newMember) {
   if (oldMember.nickname !== newMember.nickname) {
     const oldNick = oldMember.nickname || oldMember.user.username;
     const newNick = newMember.nickname || newMember.user.username;
-    changes.push({ name: 'Apodo', value: `\`${oldNick}\` -> \`${newNick}\``, inline: false });
+    changes.push({ name: 'Nickname', value: `\`${oldNick}\` -> \`${newNick}\``, inline: false });
   }
 
   // Cambio de roles
@@ -305,10 +305,10 @@ export async function onGuildMemberUpdate(oldMember, newMember) {
     const removedRoles = oldRoles.filter(role => !newRoles.has(role.id));
 
     if (addedRoles.size > 0) {
-      changes.push({ name: 'Roles Añadidos', value: addedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
+      changes.push({ name: 'Added Roles', value: addedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
     }
     if (removedRoles.size > 0) {
-      changes.push({ name: 'Roles Removidos', value: removedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
+      changes.push({ name: 'Added Roles', value: removedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
     }
   }
 
@@ -316,9 +316,9 @@ export async function onGuildMemberUpdate(oldMember, newMember) {
   if (oldMember.communicationDisabledUntilTimestamp !== newMember.communicationDisabledUntilTimestamp) {
     if (newMember.isCommunicationDisabled()) {
       const time = `<t:${Math.floor(newMember.communicationDisabledUntilTimestamp / 1000)}:R>`;
-      changes.push({ name: 'Aislamiento (Timeout)', value: `Aislado hasta ${time}`, inline: false });
+      changes.push({ name: 'Isolation (Timeout)', value: `Isolated up ${time}`, inline: false });
     } else {
-      changes.push({ name: 'Aislamiento (Timeout)', value: `Aislamiento removido`, inline: false });
+      changes.push({ name: 'Isolation (Timeout)', value: `Insulation removed`, inline: false });
     }
   }
 
@@ -326,13 +326,13 @@ export async function onGuildMemberUpdate(oldMember, newMember) {
 
   const executor = await getAuditUser(newMember.guild, auditType, newMember.id);
 
-  const embed = base('Miembro Actualizado', newMember.guild)
-    .setDescription(`**Usuario:** <@${newMember.id}> (\`${newMember.user.username}\`)`)
+  const embed = base('Updated Member', newMember.guild)
+    .setDescription(`**User:** <@${newMember.id}> (\`${newMember.user.username}\`)`)
     .setThumbnail(newMember.user.displayAvatarURL())
     .addFields(...changes);
 
   if (executor && executor.id !== newMember.id) {
-    embed.addFields({ name: 'Modificado por', value: `<@${executor.id}>`, inline: true });
+    embed.addFields({ name: 'Modified by', value: `<@${executor.id}>`, inline: true });
   }
 
   await send(newMember.guild, embed);
