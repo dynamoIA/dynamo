@@ -67,7 +67,7 @@ export async function handleIA(message, globalConfig, guildConfig) {
 
   // 🔹 Punto 6: Limitar longitud de mensajes (> 500 caracteres)
   if (userContent.length > MAX_CONTENT_LENGTH) {
-    await message.reply(`Tu mensaje es muy largo. El máximo permitido es de ${MAX_CONTENT_LENGTH} caracteres.`).catch(() => {});
+    await message.reply(`Your message is too long. The maximum allowed is ${MAX_CONTENT_LENGTH} characters.`).catch(() => {});
     return true;
   }
 
@@ -80,8 +80,8 @@ export async function handleIA(message, globalConfig, guildConfig) {
   if (!spamCheck.allowed) {
     const timeRemaining = formatTimeRemaining(spamCheck.timeRemaining);
     const msg = isDM 
-      ? `Has consumido el límite del plan Free. Espera ${timeRemaining} para continuar el chat.`
-      : `Se ha consumido el límite de mensajes en este servidor. Espera ${timeRemaining} para continuar.`;
+      ? `You have reached your Free plan limit. Please wait. ${timeRemaining} to continue the chat.`
+      : `The message limit on this server has been reached. Please wait. ${timeRemaining} to continue.`;
     await message.reply(msg).catch(() => {});
     return true;
   }
