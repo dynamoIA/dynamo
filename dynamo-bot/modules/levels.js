@@ -50,7 +50,7 @@ async function updateLevelRole(member, guildId, oldLevel, newLevel) {
     const newLevelRole = levelRoles.find(lr => lr.level === newLevel);
     if (newLevelRole && !member.roles.cache.has(newLevelRole.role_id)) {
       await member.roles.add(newLevelRole.role_id).catch(err => {
-        console.warn(`[LEVELS] Could not assign role ${newLevelRole.role_id}:`, err.message);
+        console.warn(`[LEVELS] Could not assign role ${newLevelRole.role_id}. Check bot hierarchy:`, err.message);
       });
     }
   } catch (err) {
@@ -60,22 +60,13 @@ async function updateLevelRole(member, guildId, oldLevel, newLevel) {
 
 /**
  * Envía un mensaje profesional de subida de nivel
- * SOLO si el canal de niveles está configurado
  */
 async function sendLevelUpMessage(guild, member, oldLevel, newLevel, totalXp, levelsChannelId) {
   try {
-    // Si no hay canal configurado, no enviar mensaje
-    if (!levelsChannelId) {
-      console.log(`[LEVELS] Levels channel not configured in ${guild.id}`);
-      return;
-    }
+    if (!levelsChannelId) return;
 
-    // Obtener el canal
     const levelChannel = guild.channels.cache.get(levelsChannelId);
-    if (!levelChannel || !levelChannel.isTextBased()) {
-      console.warn(`[LEVELS] Levels Channel ${levelsChannelId} does not exist or is not text`);
-      return;
-    }
+    if (!levelChannel || !levelChannel.isTextBased()) return;
 
     const nextLevelXp = getXpForNextLevel(newLevel);
     const xpProgress = totalXp - (newLevel * 100);
@@ -103,10 +94,8 @@ Keep writing to reach the next level!
 
 export async function handleLevelup(message, config) {
   try {
-    // Validaciones básicas
     if (!message || !message.guild || !message.member || message.author.bot) return;
 
-    // Anti-spam: 1 mensaje por usuario cada 5 segundos
     const now = Date.now();
     const lastMsg = cooldowns.get(message.author.id) || 0;
     if (now - lastMsg < 5000) return;
@@ -116,44 +105,44 @@ export async function handleLevelup(message, config) {
     const guildId = message.guild.id;
     const userId = message.author.id;
 
-    // 1 XP por mensaje
+    // 100 XP por mensaje para subir al nivel 1 al primer intento
     const xpGain = 100;
 
-    // Obtener usuario actual
     let user = await db.oneOrNone(
       'SELECT * FROM users WHERE user_id = $1 AND guild_id = $2',
       [userId, guildId]
     ).catch(() => null);
 
-    // Si no existe, crear nuevo usuario
+    // FIX: Si no existe, lo insertamos pero NO cortamos la ejecución con return
     if (!user) {
       await db.none(
-        'INSERT INTO users (user_id, guild_id, username, level, xp, total_xp) VALUES ($1, $2, $3, 0, $4, $5)',
-        [userId, guildId, message.author.username, xpGain, xpGain]
+        'INSERT INTO users (user_id, guild_id, username, level, xp, total_xp) VALUES ($1, $2, $3, 0, 0, 0)',
+        [userId, guildId, message.author.username]
       ).catch(err => console.error('[LEVELS] Error creating user:', err));
-      return;
+      
+      // Creamos un objeto temporal para que los cálculos de abajo funcionen
+      user = { total_xp: 0, level: 0 };
     }
 
-    // Calcular XP actual
-    const oldTotalXp = user.total_xp || 0;
+    const oldTotalXp = parseInt(user.total_xp) || 0;
     const newTotalXp = oldTotalXp + xpGain;
     const oldLevel = getLevelFromXp(oldTotalXp);
     const newLevel = getLevelFromXp(newTotalXp);
 
-    // Actualizar XP en BD (siempre, sin importar si hay cambio de nivel)
+    // Actualizar base de datos
     await db.none(
-      'UPDATE users SET xp = $1, total_xp = $2 WHERE user_id = $3 AND guild_id = $4',
-      [newTotalXp % 100, newTotalXp, userId, guildId]
+      'UPDATE users SET xp = $1, total_xp = $2, level = $3 WHERE user_id = $4 AND guild_id = $5',
+      [newTotalXp % 100, newTotalXp, newLevel, userId, guildId]
     ).catch(err => console.error('[LEVELS] Error updating XP:', err));
 
-    // Si hay cambio de nivel
+    // Si hay cambio de nivel (incluyendo de 0 a 1)
     if (newLevel > oldLevel) {
-      console.log(`[LEVELS] ${message.author.username} leveled up ${oldLevel} a ${newLevel} en ${message.guild.name}`);
+      console.log(`[LEVELS] ${message.author.username} leveled up from ${oldLevel} to ${newLevel}`);
 
-      // Actualizar roles (siempre, aunque no haya canal configurado)
+      // Actualizar roles
       await updateLevelRole(message.member, guildId, oldLevel, newLevel);
 
-      // Enviar mensaje SOLO si el canal está configurado
+      // Enviar mensaje
       await sendLevelUpMessage(
         message.guild,
         message.member,
