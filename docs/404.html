@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Página no encontrada — DynamoBot" />
+  <meta name="theme-color" content="#5865F2" />
+  <title>404 — DynamoBot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .error-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .error-page__bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .error-page__glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.1;
+      width: 600px;
+      height: 600px;
+      background: var(--brand);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .error-page__inner {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+    }
+    .error-page__code {
+      font-size: clamp(5rem, 15vw, 9rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--brand-light) 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .error-page__title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .error-page__desc {
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      font-size: 1rem;
+    }
+    .error-page__actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-page">
+    <div class="error-page__bg" aria-hidden="true">
+      <div class="error-page__glow"></div>
+    </div>
+    <div class="error-page__inner">
+      <div class="error-page__code" aria-label="Error 404">404</div>
+      <h1 class="error-page__title">Página no encontrada</h1>
+      <p class="error-page__desc">
+        La página que buscas no existe o fue movida.<br />
+        Vuelve al inicio para continuar.
+      </p>
+      <div class="error-page__actions">
+        <a href="/dynamo/" class="btn btn--primary btn--lg">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Ir al inicio
+        </a>
+        <a href="https://discord.com/oauth2/authorize?client_id=1482032015179255899&permissions=277436427318&integration_type=0&scope=bot" target="_blank" rel="noopener noreferrer" class="btn btn--ghost btn--lg">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14M5 12l7 7 7-7"/>
+          </svg>
+          Invitar el bot
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

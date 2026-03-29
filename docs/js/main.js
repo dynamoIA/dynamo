@@ -33,6 +33,7 @@
     iconOpen.style.display  = 'none';
     iconClose.style.display = 'block';
     btn.setAttribute('aria-expanded', 'true');
+    btn.setAttribute('aria-label', 'Cerrar menú');
     document.body.style.overflow = 'hidden';
   }
 
@@ -41,6 +42,7 @@
     iconOpen.style.display  = 'block';
     iconClose.style.display = 'none';
     btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-label', 'Abrir menú');
     document.body.style.overflow = '';
   }
 
