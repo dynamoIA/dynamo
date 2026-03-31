@@ -11,7 +11,7 @@ import { handleMemberJoin, handleMemberRemove } from './modules/welcome.js';
 import { handleTicketCreation } from './modules/tickets.js';
 import { handleReaction } from './modules/voting.js';
 import { handleLevelup, handleModeration } from './modules/levels.js';
-import { initMusicManager, handlePlay, handlePause, handleSkip, handleStop, handleQueue, handleVolume, handleNowPlaying } from './modules/music.js';
+import { handlePlay, handlePause, handleSkip, handleStop, handleQueue } from './modules/music.js';
 import * as Logs from './modules/logs.js';
 
 const DYNAMO_PATH = './dynamo.sf';
@@ -49,13 +49,6 @@ const slashCommands = [
   new SlashCommandBuilder().setName('change').setDescription('Cambia a la siguiente cancion en la cola'),
   new SlashCommandBuilder().setName('disconnect').setDescription('Desconecta el bot del canal de voz'),
   new SlashCommandBuilder().setName('queue').setDescription('Muestra la cola de reproduccion'),
-  new SlashCommandBuilder()
-    .setName('volume')
-    .setDescription('Ajusta el volumen de la reproduccion (0-100)')
-    .addIntegerOption(opt =>
-      opt.setName('level').setDescription('Nivel de volumen entre 0 y 100').setRequired(true).setMinValue(0).setMaxValue(100)
-    ),
-  new SlashCommandBuilder().setName('nowplaying').setDescription('Muestra la cancion que se esta reproduciendo ahora'),
 
   // ── IA ──
   new SlashCommandBuilder()
@@ -157,8 +150,6 @@ client.on('ready', async () => {
 
   await loadAllGuildConfigs(client.guilds.cache);
 
-  initMusicManager(client);
-
   try {
     const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
     await rest.put(Routes.applicationCommands(client.user.id), { body: slashCommands });
@@ -184,13 +175,11 @@ client.on('interactionCreate', async (interaction) => {
 
   try {
     switch (interaction.commandName) {
-      case 'play':        return await handlePlay(interaction);
-      case 'pause':       return await handlePause(interaction);
-      case 'change':      return await handleSkip(interaction);
-      case 'disconnect':  return await handleStop(interaction);
-      case 'queue':       return await handleQueue(interaction);
-      case 'volume':      return await handleVolume(interaction);
-      case 'nowplaying':  return await handleNowPlaying(interaction);
+      case 'play':       return await handlePlay(interaction);
+      case 'pause':      return await handlePause(interaction);
+      case 'change':     return await handleSkip(interaction);
+      case 'disconnect': return await handleStop(interaction);
+      case 'queue':      return await handleQueue(interaction);
       case 'ia':         return await handleIACommand(interaction);
       case 'config':     return await handleConfigCommand(interaction);
     }
