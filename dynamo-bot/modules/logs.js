@@ -1,26 +1,26 @@
 import { EmbedBuilder, AuditLogEvent, PermissionsBitField, ChannelType } from 'discord.js';
 import { getConfig } from './config-manager.js';
 
-// ─── Utilidades ────────────────────────────────────────────────────
+// ─── Utilities ────────────────────────────────────────────────────
 
 /**
- * Obtiene el canal de logs de forma asíncrona.
- * Consulta la DB y luego busca el canal en la caché o mediante la API.
+ * Gets the logs channel asynchronously.
+ * Queries the DB and then searches for the channel in cache or via API.
  */
 async function getLogChannel(guild) {
   try {
     const cfg = await getConfig(guild.id);
     if (!cfg || !cfg.logs_channel_id) return null;
 
-    // Intentamos obtenerlo de la caché del servidor
+    // Try to get from server cache
     let channel = guild.channels.cache.get(cfg.logs_channel_id);
     
-    // Si no está en caché, lo forzamos con fetch
+    // If not in cache, force fetch
     if (!channel) {
       channel = await guild.channels.fetch(cfg.logs_channel_id).catch(() => null);
     }
 
-    // Verificamos que sea un canal de texto
+    // Verify it's a text channel
     if (channel && channel.isTextBased()) {
       return channel;
     }
@@ -33,7 +33,7 @@ async function getLogChannel(guild) {
 }
 
 /**
- * Envía el embed al canal configurado.
+ * Sends the embed to the configured channel.
  */
 async function send(guild, embed) {
   try {
@@ -42,26 +42,26 @@ async function send(guild, embed) {
       await ch.send({ embeds: [embed] });
     }
   } catch (err) {
-    console.error(`[LOG SEND ERROR] Failure to send in ${guild.name}:`, err.message);
+    console.error(`[LOG SEND ERROR] Failed to send in ${guild.name}:`, err.message);
   }
 }
 
 /**
- * Crea la base estética de los embeds de logs.
+ * Creates the aesthetic base for log embeds.
  */
 function base(title, guild) {
   return new EmbedBuilder()
     .setColor('#3498db')
-    .setTitle(`${title}`)
+    .setTitle(title)
     .setFooter({ 
-      text: `Logs • ${guild.name}`, 
+      text: `Audit Log • ${guild.name}`, 
       iconURL: guild.iconURL({ extension: 'png' }) ?? undefined 
     })
     .setTimestamp();
 }
 
 /**
- * Busca al responsable del evento en el Audit Log.
+ * Searches for the responsible user in the Audit Log.
  */
 async function getAuditUser(guild, action, targetId = null) {
   try {
@@ -92,34 +92,34 @@ function permDiff(oldPerms, newPerms) {
 }
 
 function formatPerms(list) {
-  if (!list.length) return '-';
+  if (!list.length) return 'None';
   return list.map(p => `\`${p}\``).join(', ');
 }
 
 function channelTypeName(type) {
   const names = {
-    [ChannelType.GuildText]: 'Text',
-    [ChannelType.GuildVoice]: 'Voice',
+    [ChannelType.GuildText]: 'Text Channel',
+    [ChannelType.GuildVoice]: 'Voice Channel',
     [ChannelType.GuildCategory]: 'Category',
-    [ChannelType.GuildAnnouncement]: 'Advertisements',
+    [ChannelType.GuildAnnouncement]: 'Announcement Channel',
     [ChannelType.GuildForum]: 'Forum',
-    [ChannelType.GuildStageVoice]: 'Scenery',
+    [ChannelType.GuildStageVoice]: 'Stage Channel',
     [ChannelType.GuildThread]: 'Thread',
   };
-  return names[type] ?? 'A stranger';
+  return names[type] ?? 'Unknown Type';
 }
 
-// ─── Eventos de Canales ───────────────────────────────────────────
+// ─── Channel Events ───────────────────────────────────────────────
 
 export async function onChannelCreate(channel) {
   if (!channel.guild) return;
   const executor = await getAuditUser(channel.guild, AuditLogEvent.ChannelCreate, channel.id);
 
-  const embed = base('Created Channel', channel.guild)
+  const embed = base('Channel Created', channel.guild)
     .addFields(
       { name: 'Channel', value: `<#${channel.id}> (\`${channel.name}\`)`, inline: true },
-      { name: 'Guy', value: channelTypeName(channel.type), inline: true },
-      { name: 'Created by', value: executor ? `<@${executor.id}>` : 'A stranger', inline: true }
+      { name: 'Type', value: channelTypeName(channel.type), inline: true },
+      { name: 'Created by', value: executor ? `<@${executor.id}>` : 'Unknown', inline: true }
     );
 
   if (channel.parent) embed.addFields({ name: 'Category', value: channel.parent.name, inline: true });
@@ -130,11 +130,11 @@ export async function onChannelDelete(channel) {
   if (!channel.guild) return;
   const executor = await getAuditUser(channel.guild, AuditLogEvent.ChannelDelete, channel.id);
 
-  const embed = base('Deleted Channel', channel.guild)
+  const embed = base('Channel Deleted', channel.guild)
     .addFields(
       { name: 'Channel', value: `\`#${channel.name}\``, inline: true },
-      { name: 'Guy', value: channelTypeName(channel.type), inline: true },
-      { name: 'removed by', value: executor ? `<@${executor.id}>` : 'A stranger', inline: true }
+      { name: 'Type', value: channelTypeName(channel.type), inline: true },
+      { name: 'Deleted by', value: executor ? `<@${executor.id}>` : 'Unknown', inline: true }
     );
 
   await send(channel.guild, embed);
@@ -145,21 +145,21 @@ export async function onChannelUpdate(oldCh, newCh) {
   const changes = [];
 
   if (oldCh.name !== newCh.name)
-    changes.push({ name: 'Name', value: `\`${oldCh.name}\` -> \`${newCh.name}\``, inline: false });
+    changes.push({ name: 'Name', value: `\`${oldCh.name}\` → \`${newCh.name}\``, inline: false });
 
   if (oldCh.topic !== newCh.topic)
-    changes.push({ name: 'Description', value: `\`${oldCh.topic || '-'}\` -> \`${newCh.topic || '-'}\``, inline: false });
+    changes.push({ name: 'Topic', value: `\`${oldCh.topic || 'None'}\` → \`${newCh.topic || 'None'}\``, inline: false });
 
   if (oldCh.rateLimitPerUser !== newCh.rateLimitPerUser)
-    changes.push({ name: 'Slowmode', value: `${oldCh.rateLimitPerUser}s -> ${newCh.rateLimitPerUser}s`, inline: true });
+    changes.push({ name: 'Slowmode', value: `${oldCh.rateLimitPerUser}s → ${newCh.rateLimitPerUser}s`, inline: true });
 
   if (oldCh.nsfw !== newCh.nsfw)
-    changes.push({ name: 'NSFW', value: `${oldCh.nsfw ? 'Yes' : 'No'} -> ${newCh.nsfw ? 'Yes' : 'No'}`, inline: true });
+    changes.push({ name: 'NSFW', value: `${oldCh.nsfw ? 'Yes' : 'No'} → ${newCh.nsfw ? 'Yes' : 'No'}`, inline: true });
 
   if (!changes.length) return;
 
   const executor = await getAuditUser(newCh.guild, AuditLogEvent.ChannelUpdate, newCh.id);
-  const embed = base('Modified Channel', newCh.guild)
+  const embed = base('Channel Updated', newCh.guild)
     .setDescription(`**Channel:** <#${newCh.id}> (\`${newCh.name}\`)`)
     .addFields(...changes);
 
@@ -167,25 +167,25 @@ export async function onChannelUpdate(oldCh, newCh) {
   await send(newCh.guild, embed);
 }
 
-// ─── Eventos de Roles ─────────────────────────────────────────────
+// ─── Role Events ──────────────────────────────────────────────────
 
 export async function onRoleCreate(role) {
   const executor = await getAuditUser(role.guild, AuditLogEvent.RoleCreate, role.id);
-  const embed = base('Created Role', role.guild)
+  const embed = base('Role Created', role.guild)
     .addFields(
-      { name: 'Rol', value: `<@&${role.id}> (\`${role.name}\`)`, inline: true },
-      { name: 'Color', value: role.hexColor || 'Por defecto', inline: true },
-      { name: 'Created by', value: executor ? `<@${executor.id}>` : 'A stranger', inline: true }
+      { name: 'Role', value: `<@&${role.id}> (\`${role.name}\`)`, inline: true },
+      { name: 'Color', value: role.hexColor || 'Default', inline: true },
+      { name: 'Created by', value: executor ? `<@${executor.id}>` : 'Unknown', inline: true }
     );
   await send(role.guild, embed);
 }
 
 export async function onRoleDelete(role) {
   const executor = await getAuditUser(role.guild, AuditLogEvent.RoleDelete, role.id);
-  const embed = base('Role Removed', role.guild)
+  const embed = base('Role Deleted', role.guild)
     .addFields(
-      { name: 'Rol', value: `\`${role.name}\``, inline: true },
-      { name: 'removed by', value: executor ? `<@${executor.id}>` : 'A stranger', inline: true }
+      { name: 'Role', value: `\`${role.name}\``, inline: true },
+      { name: 'Deleted by', value: executor ? `<@${executor.id}>` : 'Unknown', inline: true }
     );
   await send(role.guild, embed);
 }
@@ -194,10 +194,10 @@ export async function onRoleUpdate(oldRole, newRole) {
   const changes = [];
 
   if (oldRole.name !== newRole.name)
-    changes.push({ name: 'Name', value: `\`${oldRole.name}\` -> \`${newRole.name}\``, inline: true });
+    changes.push({ name: 'Name', value: `\`${oldRole.name}\` → \`${newRole.name}\``, inline: true });
 
   if (oldRole.hexColor !== newRole.hexColor)
-    changes.push({ name: 'Color', value: `\`${oldRole.hexColor}\` -> \`${newRole.hexColor}\``, inline: true });
+    changes.push({ name: 'Color', value: `\`${oldRole.hexColor}\` → \`${newRole.hexColor}\``, inline: true });
 
   const { added, removed } = permDiff(oldRole.permissions, newRole.permissions);
   if (added.length) changes.push({ name: 'Permissions Added', value: formatPerms(added), inline: false });
@@ -206,73 +206,73 @@ export async function onRoleUpdate(oldRole, newRole) {
   if (!changes.length) return;
 
   const executor = await getAuditUser(newRole.guild, AuditLogEvent.RoleUpdate, newRole.id);
-  const embed = base('Modified Role', newRole.guild)
-    .setDescription(`**Rol:** <@&${newRole.id}> (\`${newRole.name}\`)`)
+  const embed = base('Role Updated', newRole.guild)
+    .setDescription(`**Role:** <@&${newRole.id}> (\`${newRole.name}\`)`)
     .addFields(...changes);
 
   if (executor) embed.addFields({ name: 'Modified by', value: `<@${executor.id}>`, inline: true });
   await send(newRole.guild, embed);
 }
 
-// ─── Eventos de Mensajes ───────────────────────────────────────────
+// ─── Message Events ───────────────────────────────────────────────
 
 export async function onMessageDelete(message) {
   if (!message.guild || message.partial || message.author?.bot) return;
 
   const executor = await getAuditUser(message.guild, AuditLogEvent.MessageDelete, message.id);
-  const content = message.content ? `\`\`\`\n${message.content.slice(0, 1000)}\n\`\`\`` : '(sin texto o solo adjuntos)';
+  const content = message.content ? `\`\`\`\n${message.content.slice(0, 1000)}\n\`\`\`` : '(No text or attachments only)';
 
-  const embed = base('Deleted Message', message.guild)
+  const embed = base('Message Deleted', message.guild)
     .addFields(
       { name: 'Channel', value: `<#${message.channelId}>`, inline: true },
-      { name: 'Author', value: message.author ? `<@${message.author.id}>` : 'A stranger', inline: true },
+      { name: 'Author', value: message.author ? `<@${message.author.id}>` : 'Unknown', inline: true },
       { name: 'Content', value: content, inline: false }
     );
 
-  if (executor) embed.addFields({ name: 'Removed by', value: `<@${executor.id}>`, inline: true });
+  if (executor) embed.addFields({ name: 'Deleted by', value: `<@${executor.id}>`, inline: true });
   await send(message.guild, embed);
 }
 
-// ─── Otros Eventos ───────────────────────────────────────────────
+// ─── Other Events ─────────────────────────────────────────────────
 
 export async function onGuildBanAdd(ban) {
   const executor = await getAuditUser(ban.guild, AuditLogEvent.MemberBanAdd, ban.user.id);
-  const embed = base('Banned Member', ban.guild)
+  const embed = base('Member Banned', ban.guild)
     .addFields(
       { name: 'User', value: `<@${ban.user.id}> (\`${ban.user.username}\`)`, inline: true },
-      { name: 'Banned by', value: executor ? `<@${executor.id}>` : 'Desconocido', inline: true },
-      { name: 'Reason', value: ban.reason || 'Unspecified', inline: false }
+      { name: 'Banned by', value: executor ? `<@${executor.id}>` : 'Unknown', inline: true },
+      { name: 'Reason', value: ban.reason || 'Not provided', inline: false }
     );
   await send(ban.guild, embed);
 }
 
 export async function onNewBot(member) {
   const executor = await getAuditUser(member.guild, AuditLogEvent.BotAdd, member.id);
-  const embed = base('New Bot Added', member.guild)
+  const embed = base('Bot Added', member.guild)
     .addFields(
       { name: 'Bot', value: `<@${member.id}> (\`${member.user.username}\`)`, inline: true },
-      { name: 'Added by', value: executor ? `<@${executor.id}>` : 'A stranger', inline: true }
+      { name: 'Added by', value: executor ? `<@${executor.id}>` : 'Unknown', inline: true }
     );
   await send(member.guild, embed);
 }
 
-// ─── Eventos del Servidor y Miembros ─────────────────────────────
+// ─── Server and Member Events ─────────────────────────────────────
 
 export async function onGuildUpdate(oldGuild, newGuild) {
   const changes = [];
 
   if (oldGuild.name !== newGuild.name) {
-    changes.push({ name: 'Name', value: `\`${oldGuild.name}\` -> \`${newGuild.name}\``, inline: false });
+    changes.push({ name: 'Name', value: `\`${oldGuild.name}\` → \`${newGuild.name}\``, inline: false });
   }
 
   if (oldGuild.verificationLevel !== newGuild.verificationLevel) {
-    changes.push({ name: 'Verification Level', value: `Modified`, inline: true });
+    changes.push({ name: 'Verification Level', value: 'Modified', inline: true });
   }
 
   if (!changes.length) return;
 
   const executor = await getAuditUser(newGuild, AuditLogEvent.GuildUpdate);
-  const embed = base('Updated Server', newGuild)
+  const embed = base('Server Updated', newGuild)
     .addFields(...changes);
 
   if (executor) {
@@ -287,14 +287,14 @@ export async function onGuildMemberUpdate(oldMember, newMember) {
   const changes = [];
   let auditType = AuditLogEvent.MemberUpdate;
 
-  // Cambio de apodo
+  // Nickname change
   if (oldMember.nickname !== newMember.nickname) {
     const oldNick = oldMember.nickname || oldMember.user.username;
     const newNick = newMember.nickname || newMember.user.username;
-    changes.push({ name: 'Nickname', value: `\`${oldNick}\` -> \`${newNick}\``, inline: false });
+    changes.push({ name: 'Nickname', value: `\`${oldNick}\` → \`${newNick}\``, inline: false });
   }
 
-  // Cambio de roles
+  // Role change
   if (oldMember.roles.cache.size !== newMember.roles.cache.size) {
     auditType = AuditLogEvent.MemberRoleUpdate;
     
@@ -305,20 +305,20 @@ export async function onGuildMemberUpdate(oldMember, newMember) {
     const removedRoles = oldRoles.filter(role => !newRoles.has(role.id));
 
     if (addedRoles.size > 0) {
-      changes.push({ name: 'Added Roles', value: addedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
+      changes.push({ name: 'Roles Added', value: addedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
     }
     if (removedRoles.size > 0) {
-      changes.push({ name: 'Added Roles', value: removedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
+      changes.push({ name: 'Roles Removed', value: removedRoles.map(r => `<@&${r.id}>`).join(', '), inline: false });
     }
   }
 
-  // Aislamiento (Timeout)
+  // Timeout (Communication Disabled)
   if (oldMember.communicationDisabledUntilTimestamp !== newMember.communicationDisabledUntilTimestamp) {
     if (newMember.isCommunicationDisabled()) {
       const time = `<t:${Math.floor(newMember.communicationDisabledUntilTimestamp / 1000)}:R>`;
-      changes.push({ name: 'Isolation (Timeout)', value: `Isolated up ${time}`, inline: false });
+      changes.push({ name: 'Timeout', value: `Timed out until ${time}`, inline: false });
     } else {
-      changes.push({ name: 'Isolation (Timeout)', value: `Insulation removed`, inline: false });
+      changes.push({ name: 'Timeout', value: 'Timeout removed', inline: false });
     }
   }
 
@@ -326,7 +326,7 @@ export async function onGuildMemberUpdate(oldMember, newMember) {
 
   const executor = await getAuditUser(newMember.guild, auditType, newMember.id);
 
-  const embed = base('Updated Member', newMember.guild)
+  const embed = base('Member Updated', newMember.guild)
     .setDescription(`**User:** <@${newMember.id}> (\`${newMember.user.username}\`)`)
     .setThumbnail(newMember.user.displayAvatarURL())
     .addFields(...changes);
