@@ -168,6 +168,22 @@ client.on('ready', async () => {
     console.error('Error registrando slash commands:', error);
   }
 
+  // ─── Presencia dinámica (actualizar cada segundo) ──────────────────
+  setInterval(() => {
+    const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
+    const totalGuilds = client.guilds.cache.size;
+
+    client.user.setPresence({
+      status: 'online',
+      activities: [
+        {
+          name: `${totalUsers.toLocaleString()} usuarios en ${totalGuilds} servidores`,
+          type: ActivityType.Watching
+        }
+      ]
+    });
+  }, 1000); // Actualizar cada segundo
+
   setInterval(() => {
     globalConfig = { ...process.env, ...readConfig(DYNAMO_PATH) };
   }, 30000);
