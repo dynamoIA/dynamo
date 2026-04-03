@@ -10,7 +10,7 @@ import { handleIA } from './modules/ia.js';
 import { handleMemberJoin, handleMemberRemove } from './modules/welcome.js';
 import { handleTicketCreation } from './modules/tickets.js';
 import { handleReaction } from './modules/voting.js';
-import { handleLevelup, handleModeration } from './modules/levels.js';
+import { handleLevelup, handleModeration, handleRankCommand } from './modules/levels.js';
 import { initMusicManager, handlePlay, handlePause, handleSkip, handleStop, handleQueue, handleVolume, handleNowPlaying } from './modules/music.js';
 import * as Logs from './modules/logs.js';
 
@@ -56,6 +56,12 @@ const slashCommands = [
       opt.setName('level').setDescription('Nivel de volumen entre 0 y 100').setRequired(true).setMinValue(0).setMaxValue(100)
     ),
   new SlashCommandBuilder().setName('nowplaying').setDescription('Muestra la cancion que se esta reproduciendo ahora'),
+
+  // ── Niveles ──
+  new SlashCommandBuilder()
+    .setName('rank')
+    .setDescription('Muestra tu rango, XP y nivel en este servidor')
+    .addUserOption(opt => opt.setName('usuario').setDescription('Usuario a consultar (opcional)').setRequired(false)),
 
   // ── IA ──
   new SlashCommandBuilder()
@@ -208,6 +214,7 @@ client.on('interactionCreate', async (interaction) => {
       case 'queue':      return await handleQueue(interaction);
       case 'volume':     return await handleVolume(interaction);
       case 'nowplaying': return await handleNowPlaying(interaction);
+      case 'rank':       return await handleRankCommand(interaction);
       case 'ia':         return await handleIACommand(interaction);
       case 'config':     return await handleConfigCommand(interaction);
     }
