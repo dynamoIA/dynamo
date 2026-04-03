@@ -271,6 +271,108 @@ export async function handleLevelup(message, config) {
 }
 
 /**
+ * Comando /rank - Muestra el rango, XP y nivel del usuario en el servidor
+ */
+export async function handleRankCommand(interaction) {
+  try {
+    const targetUser = interaction.options.getUser('usuario') || interaction.user;
+    const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
+
+    if (!member) {
+      return interaction.reply({
+        content: `❌ No se encontró al usuario ${targetUser.tag} en este servidor.`,
+        ephemeral: true
+      });
+    }
+
+    const db = getDB();
+    const guildId = interaction.guildId;
+    const userId = targetUser.id;
+
+    // Obtener datos del usuario
+    let user = await db.oneOrNone(
+      'SELECT * FROM users WHERE user_id = $1 AND guild_id = $2',
+      [userId, guildId]
+    ).catch(() => null);
+
+    if (!user) {
+      return interaction.reply({
+        content: `❌ ${targetUser.tag} no tiene datos de XP en este servidor aún.`,
+        ephemeral: true
+      });
+    }
+
+    const totalXp = parseInt(user.total_xp) || 0;
+    const currentLevel = getLevelFromXp(totalXp);
+    const xpIntoLevel = totalXp - (currentLevel * 100);
+    const xpPerLevel = 100;
+    const xpRemaining = xpPerLevel - xpIntoLevel;
+    const progressBar = buildProgressBar(xpIntoLevel, xpPerLevel, 15);
+
+    // Obtener ranking del usuario en el servidor
+    const ranking = await db.oneOrNone(
+      'SELECT COUNT(*) as rank FROM users WHERE guild_id = $1 AND total_xp > $2',
+      [guildId, totalXp]
+    ).catch(() => ({ rank: 0 }));
+
+    const userRank = (ranking?.rank || 0) + 1;
+
+    // Obtener total de usuarios con XP en el servidor
+    const totalUsers = await db.one(
+      'SELECT COUNT(*) as count FROM users WHERE guild_id = $1',
+      [guildId]
+    ).catch(() => ({ count: 0 }));
+
+    const embed = new EmbedBuilder()
+      .setColor('#5865F2')
+      .setAuthor({
+        name: targetUser.tag,
+        iconURL: targetUser.displayAvatarURL({ dynamic: true })
+      })
+      .setTitle('📊 Rango del Servidor')
+      .setDescription(`Información de XP y nivel de **${targetUser.username}** en **${interaction.guild.name}**`)
+      .addFields(
+        {
+          name: '🏆 Ranking',
+          value: `**#${userRank}** de **${totalUsers.count}** usuarios`,
+          inline: true
+        },
+        {
+          name: '📈 Nivel',
+          value: `**${currentLevel}**`,
+          inline: true
+        },
+        {
+          name: '✨ XP Total',
+          value: `**${totalXp.toLocaleString()}** XP`,
+          inline: true
+        },
+        {
+          name: '⚡ Progreso',
+          value: `\`${progressBar}\` ${xpIntoLevel}/${xpPerLevel} XP`,
+          inline: false
+        },
+        {
+          name: '🎯 Siguiente Nivel',
+          value: `Faltan **${xpRemaining} XP** para alcanzar el Nivel ${currentLevel + 1}`,
+          inline: false
+        }
+      )
+      .setFooter({ text: interaction.guild.name })
+      .setTimestamp();
+
+    return interaction.reply({ embeds: [embed] });
+
+  } catch (error) {
+    console.error('[LEVELS] Error en handleRankCommand:', error);
+    return interaction.reply({
+      content: '❌ Ocurrió un error al obtener tu información de rango.',
+      ephemeral: true
+    });
+  }
+}
+
+/**
  * Sistema de advertencias por prefijo (!warn).
  * Banea automáticamente al alcanzar 3 advertencias.
  */
