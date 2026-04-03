@@ -136,7 +136,46 @@
 
 /* Responsive adjustments for new elements */
 @media (max-width: 768px) {
-  .hidden-mobile { display: none !important; }
-  .mockup-app { transform: rotate(0); max-width: 100%; padding: 24px; }
-  .welcome-box { max-width: 100%; }
+  .hidden-mobile { 
+    display: none !important; 
+  }
+  
+  .welcome-box { 
+    max-width: 100%; 
+    padding: 16px;
+    margin-top: 20px;
+  }
+
+  .mockup-app { 
+    transform: rotate(0); 
+    max-width: 100%; 
+    padding: 20px; 
+  }
+
+  .mockup-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .realtime-status, .mobile-realtime-status {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Extra adjustments for very small screens */
+@media (max-width: 480px) {
+  .mockup-app {
+    padding: 16px;
+  }
+  
+  .mockup-card {
+    padding: 12px;
+  }
+  
+  .welcome-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
 }
