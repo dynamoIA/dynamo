@@ -123,10 +123,20 @@ async function updateLevelRoles(member, guildId, totalXp) {
  */
 async function sendLevelUpMessage(guild, member, oldLevel, newLevel, totalXp, levelsChannelId, newRoles = []) {
   try {
-    if (!levelsChannelId) return;
+    if (!levelsChannelId) {
+      console.warn('[LEVELS] No hay canal de niveles configurado para este servidor.');
+      return;
+    }
 
     const levelChannel = guild.channels.cache.get(levelsChannelId);
-    if (!levelChannel || !levelChannel.isTextBased()) return;
+    if (!levelChannel) {
+      console.warn(`[LEVELS] Canal de niveles ${levelsChannelId} no encontrado en ${guild.name}.`);
+      return;
+    }
+    if (!levelChannel.isTextBased()) {
+      console.warn(`[LEVELS] Canal ${levelsChannelId} no es un canal de texto.`);
+      return;
+    }
 
     // Calcular progreso dentro del nivel actual
     const xpIntoLevel = totalXp - (newLevel * 100);   // XP acumulado en el nivel actual
@@ -219,9 +229,9 @@ export async function handleLevelup(message, config) {
 
     if (!user) {
       await db.none(
-        'INSERT INTO users (user_id, guild_id, username, level, xp, total_xp) VALUES ($1, $2, $3, 0, 0, 0)',
+        'INSERT INTO users (user_id, guild_id, username, level, xp, total_xp) VALUES ($1, $2, $3, 0, 0, 0) ON CONFLICT (user_id, guild_id) DO UPDATE SET username = $3',
         [userId, guildId, message.author.username]
-      ).catch(err => console.error('[LEVELS] Error al crear registro de usuario:', err));
+      ).catch(err => console.error('[LEVELS] Error al crear/actualizar registro de usuario:', err));
 
       user = { total_xp: 0, level: 0 };
     }
