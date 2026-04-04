@@ -6,7 +6,7 @@ import {
 import express from 'express';
 import { initDB, getDB } from './database/db.js';
 import { loadAllGuildConfigs, initGuildConfig, getConfig, setConfig } from './modules/config-manager.js';
-import { handleIA } from './modules/ia.js';
+import { handleIA, handleIACommand } from './modules/ia.js';
 import { handleMemberJoin, handleMemberRemove } from './modules/welcome.js';
 import { handleTicketCreation } from './modules/tickets.js';
 import { handleReaction } from './modules/voting.js';
@@ -363,27 +363,6 @@ async function handleLanguageCommand(interaction) {
       content: 'Ocurrió un error al guardar tu preferencia de idioma.',
       ephemeral: true
     });
-  }
-}
-
-// ─── /ia handler ────────────────────────────────────────────────────
-async function handleIACommand(interaction) {
-  try {
-    const sub = interaction.options.getSubcommand();
-    const enabled = sub === 'enable' ? 1 : 0;
-
-    console.log(`[DB DEBUG] Guardando IA config: ia_enabled = ${enabled} (Guild: ${interaction.guildId})`);
-    
-    await setConfig(interaction.guildId, 'ia_enabled', enabled);
-    await interaction.reply({
-      content: enabled
-        ? 'Asistente de IA activado en este servidor.'
-        : 'Asistente de IA desactivado en este servidor.',
-      ephemeral: true
-    });
-  } catch (error) {
-    console.error('[DB ERROR] Fallo al guardar IA:', error);
-    await interaction.reply({ content: 'Parece que hubo un error al guardar en la base de datos.', ephemeral: true });
   }
 }
 
