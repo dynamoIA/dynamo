@@ -373,6 +373,93 @@ export async function handleRankCommand(interaction) {
 }
 
 /**
+ * Comando /level-config - Configura niveles y roles
+ */
+export async function handleLevelConfigCommand(interaction) {
+  try {
+    const xpRequired = interaction.options.getInteger('xp');
+    const role = interaction.options.getRole('rol');
+
+    if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
+      return interaction.reply({
+        content: 'No tienes permisos para usar este comando.',
+        ephemeral: true
+      });
+    }
+
+    const db = getDB();
+    const guildId = interaction.guildId;
+
+    await db.none(
+      'INSERT INTO level_roles (guild_id, role_id, xp_required) VALUES ($1, $2, $3) ON CONFLICT (guild_id, role_id) DO UPDATE SET xp_required = $3',
+      [guildId, role.id, xpRequired]
+    ).catch(err => {
+      console.error('[LEVELS] Error en level-config:', err);
+      throw err;
+    });
+
+    console.log(`[LEVELS] ⚙️ Rol "${role.name}" configurado para ${xpRequired} XP en ${interaction.guild.name}.`);
+
+    return interaction.reply({
+      content: `✅ Rol ${role} configurado para **${xpRequired} XP**.`,
+      ephemeral: true
+    });
+
+  } catch (error) {
+    console.error('[LEVELS] Error en handleLevelConfigCommand:', error);
+    return interaction.reply({
+      content: 'Ocurrió un error al configurar el nivel.',
+      ephemeral: true
+    });
+  }
+}
+
+/**
+ * Comando /leaderboard - Top 10 usuarios por XP
+ */
+export async function handleLeaderboardCommand(interaction) {
+  try {
+    const db = getDB();
+    const guildId = interaction.guildId;
+
+    const topUsers = await db.any(
+      'SELECT user_id, username, total_xp, level FROM users WHERE guild_id = $1 ORDER BY total_xp DESC LIMIT 10',
+      [guildId]
+    ).catch(() => []);
+
+    if (topUsers.length === 0) {
+      return interaction.reply({
+        content: 'No hay usuarios con XP en este servidor aún.',
+        ephemeral: true
+      });
+    }
+
+    const medals = ['🥇', '🥈', '🥉'];
+    const leaderboard = topUsers.map((user, index) => {
+      const level = getLevelFromXp(parseInt(user.total_xp) || 0);
+      const prefix = medals[index] ?? `**${index + 1}.**`;
+      return `${prefix} ${user.username} — Nivel **${level}** (${parseInt(user.total_xp).toLocaleString()} XP)`;
+    }).join('\n');
+
+    const embed = new EmbedBuilder()
+      .setColor('#FFD700')
+      .setTitle('🏆 Top 10 — Leaderboard')
+      .setDescription(leaderboard)
+      .setFooter({ text: interaction.guild.name })
+      .setTimestamp();
+
+    return interaction.reply({ embeds: [embed] });
+
+  } catch (error) {
+    console.error('[LEVELS] Error en handleLeaderboardCommand:', error);
+    return interaction.reply({
+      content: 'Ocurrió un error al obtener el leaderboard.',
+      ephemeral: true
+    });
+  }
+}
+
+/**
  * Sistema de advertencias por prefijo (!warn).
  * Banea automáticamente al alcanzar 3 advertencias.
  */

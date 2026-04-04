@@ -10,7 +10,7 @@ import { handleIA } from './modules/ia.js';
 import { handleMemberJoin, handleMemberRemove } from './modules/welcome.js';
 import { handleTicketCreation } from './modules/tickets.js';
 import { handleReaction } from './modules/voting.js';
-import { handleLevelup, handleModeration, handleRankCommand } from './modules/levels.js';
+import { handleLevelup, handleModeration, handleRankCommand, handleLeaderboardCommand, handleLevelConfigCommand } from './modules/levels.js';
 import { initMusicManager, handlePlay, handlePause, handleSkip, handleStop, handleQueue, handleVolume, handleNowPlaying } from './modules/music.js';
 import * as Logs from './modules/logs.js';
 
@@ -62,6 +62,15 @@ const slashCommands = [
     .setName('rank')
     .setDescription('Muestra tu rango, XP y nivel en este servidor')
     .addUserOption(opt => opt.setName('usuario').setDescription('Usuario a consultar (opcional)').setRequired(false)),
+  new SlashCommandBuilder()
+    .setName('leaderboard')
+    .setDescription('Muestra el top 10 de usuarios por XP en este servidor'),
+  new SlashCommandBuilder()
+    .setName('level-config')
+    .setDescription('Configura los niveles y roles del servidor (Admin)')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addIntegerOption(opt => opt.setName('xp').setDescription('XP requerido para este nivel').setRequired(true).setMinValue(1))
+    .addRoleOption(opt => opt.setName('rol').setDescription('Rol a asignar').setRequired(true)),
 
   // ── IA ──
   new SlashCommandBuilder()
@@ -214,8 +223,10 @@ client.on('interactionCreate', async (interaction) => {
       case 'queue':      return await handleQueue(interaction);
       case 'volume':     return await handleVolume(interaction);
       case 'nowplaying': return await handleNowPlaying(interaction);
-      case 'rank':       return await handleRankCommand(interaction);
-      case 'ia':         return await handleIACommand(interaction);
+      case 'rank':         return await handleRankCommand(interaction);
+      case 'leaderboard':  return await handleLeaderboardCommand(interaction);
+      case 'level-config': return await handleLevelConfigCommand(interaction);
+      case 'ia':           return await handleIACommand(interaction);
       case 'config':     return await handleConfigCommand(interaction);
     }
   } catch (error) {
