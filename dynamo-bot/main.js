@@ -200,14 +200,14 @@ client.on('ready', async () => {
 
   // ─── Presencia dinámica (actualizar cada segundo) ──────────────────
   setInterval(() => {
-    const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
     const totalGuilds = client.guilds.cache.size;
+    const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
 
     client.user.setPresence({
       status: 'online',
       activities: [
         {
-          name: `Sloet Froom: ${totalUsers.toLocaleString()} Users / ${totalGuilds} servers`,
+          name: `${totalUsers.toLocaleString()} usuarios en ${totalGuilds} servidores`,
           type: ActivityType.Watching
         }
       ]
