@@ -78,6 +78,13 @@ export async function initDB() {
         details TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS user_languages (
+        user_id TEXT NOT NULL,
+        guild_id TEXT NOT NULL,
+        language TEXT DEFAULT 'es',
+        PRIMARY KEY (user_id, guild_id)
+      );
     `);
     
     console.log('✅ Base de datos PostgreSQL inicializada y conectada.');

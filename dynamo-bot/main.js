@@ -13,6 +13,7 @@ import { handleReaction } from './modules/voting.js';
 import { handleLevelup, handleModeration, handleRankCommand } from './modules/levels.js';
 import { initMusicManager, handlePlay, handlePause, handleSkip, handleStop, handleQueue, handleVolume, handleNowPlaying } from './modules/music.js';
 import * as Logs from './modules/logs.js';
+import { getLanguage, setUserLanguage, t } from './modules/i18n.js';
 
 const DYNAMO_PATH = './dynamo.sf';
 
@@ -131,6 +132,20 @@ const slashCommands = [
       .setName('ver')
       .setDescription('Muestra la configuracion actual de este servidor')
     ),
+
+  // ── Idioma ──
+  new SlashCommandBuilder()
+    .setName('language')
+    .setDescription('Cambiar idioma del bot / Change bot language')
+    .addStringOption(opt => opt
+      .setName('idioma')
+      .setDescription('Idioma: español o english')
+      .setRequired(true)
+      .addChoices(
+        { name: 'Español', value: 'es' },
+        { name: 'English', value: 'en' }
+      )
+    ),
 ].map(cmd => cmd.toJSON());
 
 const client = new Client({
@@ -217,6 +232,7 @@ client.on('interactionCreate', async (interaction) => {
       case 'rank':       return await handleRankCommand(interaction);
       case 'ia':         return await handleIACommand(interaction);
       case 'config':     return await handleConfigCommand(interaction);
+      case 'language':   return await handleLanguageCommand(interaction);
     }
   } catch (error) {
     console.error(`Error en /${interaction.commandName}:`, error);
@@ -225,6 +241,28 @@ client.on('interactionCreate', async (interaction) => {
     else interaction.reply(msg).catch(() => {});
   }
 });
+
+// ─── /language handler ───────────────────────────────────────────────
+async function handleLanguageCommand(interaction) {
+  const lang = interaction.options.getString('idioma');
+  const userId = interaction.user.id;
+  const guildId = interaction.guildId;
+
+  try {
+    await setUserLanguage(userId, guildId, lang);
+    const userLang = await getLanguage(userId, guildId);
+    await interaction.reply({
+      content: t('language_set', userLang),
+      ephemeral: true
+    });
+  } catch (error) {
+    console.error('[i18n ERROR] Fallo al guardar idioma:', error);
+    await interaction.reply({
+      content: 'Ocurrió un error al guardar tu preferencia de idioma.',
+      ephemeral: true
+    });
+  }
+}
 
 // ─── /ia handler ────────────────────────────────────────────────────
 async function handleIACommand(interaction) {
