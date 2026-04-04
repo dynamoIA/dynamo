@@ -57,9 +57,9 @@ Máximo 2000 caracteres por respuesta.`;
 
     // Llamar a la API de OpenAI (o alternativa)
     const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
+      'https://api.groq.com/openai/v1/chat/completions',
       {
-        model: 'gpt-3.5-turbo',
+        model: 'llama-3.1-8b-instant',
         messages: [
           { role: 'system', content: systemPrompt },
           ...history
@@ -70,7 +70,7 @@ Máximo 2000 caracteres por respuesta.`;
       },
       {
         headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
           'Content-Type': 'application/json'
         }
       }
