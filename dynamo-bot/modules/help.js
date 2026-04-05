@@ -3,8 +3,8 @@ import { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } from 'discord
 const helpCategories = {
   musica: {
     name: 'Música',
-    emoji: '•',
-    description: 'Comandos para reproducir música (Actualmente en desarrollo)',
+    emoji: '🎵',
+    description: 'Comandos para reproducir música - Actualmente en desarrollo',
     commands: [
       { name: '/play <canción>', desc: 'Reproduce una canción' },
       { name: '/pause', desc: 'Pausa o reanuda la música' },
@@ -18,7 +18,7 @@ const helpCategories = {
   niveles: {
     name: 'Niveles',
     emoji: '•',
-    description: 'Comandos del sistema de niveles y XP (Actualmente en desarrollo)',
+    description: 'Comandos del sistema de niveles y XP - Actualmente en desarrollo',
     commands: [
       { name: '/rank [usuario]', desc: 'Ver tu rango y XP' },
       { name: '/leaderboard', desc: 'Top 10 usuarios por XP' },
