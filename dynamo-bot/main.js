@@ -20,6 +20,7 @@ import {
   handleLockCommand, handleUnlockCommand, handleAntiSpamCommand, handleAntiBotCommand,
   handleAntiRaidCommand
 } from './modules/moderation.js';
+import { handleHelpCommand, handleHelpSelectMenu } from './modules/help.js';
 
 const DYNAMO_PATH = './dynamo.sf';
 
@@ -233,6 +234,11 @@ const slashCommands = [
         { name: 'English', value: 'en' }
       )
     ),
+
+  // ── Ayuda ──
+  new SlashCommandBuilder()
+    .setName('help')
+    .setDescription('Muestra la ayuda de todos los comandos disponibles'),
 ].map(cmd => cmd.toJSON());
 
 const client = new Client({
@@ -305,6 +311,12 @@ client.on('guildCreate', async (guild) => {
 
 // ─── Slash commands handler ──────────────────────────────────────────
 client.on('interactionCreate', async (interaction) => {
+  if (interaction.isStringSelectMenu()) {
+    if (interaction.customId === 'help_select') {
+      return handleHelpSelectMenu(interaction);
+    }
+  }
+
   if (!interaction.isChatInputCommand()) return;
 
   try {
@@ -335,6 +347,7 @@ client.on('interactionCreate', async (interaction) => {
       case 'antispam':   return await handleAntiSpamCommand(interaction);
       case 'antibot':    return await handleAntiBotCommand(interaction);
       case 'antiraid':   return await handleAntiRaidCommand(interaction);
+      case 'help':       return await handleHelpCommand(interaction);
     }
   } catch (error) {
     console.error(`Error en /${interaction.commandName}:`, error);
