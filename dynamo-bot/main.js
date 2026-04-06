@@ -309,6 +309,31 @@ client.on('guildCreate', async (guild) => {
   await initGuildConfig(guild.id);
 });
 
+// ─── Mensajes (IA y Niveles) ────────────────────────────────────────
+client.on('messageCreate', async (message) => {
+  try {
+    // Ignorar bots
+    if (message.author.bot) return;
+
+    // Obtener configuración del servidor
+    let guildConfig = null;
+    if (message.guild) {
+      guildConfig = await getConfig(message.guild.id);
+    }
+
+    // Manejar IA (funciona en DMs y servidores)
+    const iaHandled = await handleIA(message, globalConfig, guildConfig);
+    if (iaHandled) return;
+
+    // Manejar niveles (solo en servidores)
+    if (message.guild) {
+      await handleLevelup(message, guildConfig);
+    }
+  } catch (error) {
+    console.error('[MESSAGE] Error en messageCreate:', error);
+  }
+});
+
 // ─── Slash commands handler ──────────────────────────────────────────
 client.on('interactionCreate', async (interaction) => {
   if (interaction.isStringSelectMenu()) {
