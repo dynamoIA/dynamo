@@ -323,10 +323,14 @@ client.on('messageCreate', async (message) => {
 
     // Manejar IA (funciona en DMs y servidores)
     const iaHandled = await handleIA(message, globalConfig, guildConfig);
-    if (iaHandled) return;
+    if (iaHandled) {
+      console.log('[MESSAGE] IA manejó el mensaje, no procesando niveles');
+      return;
+    }
 
     // Manejar niveles (solo en servidores)
     if (message.guild) {
+      console.log('[MESSAGE] Procesando niveles para usuario en servidor');
       await handleLevelup(message, guildConfig);
     }
   } catch (error) {
