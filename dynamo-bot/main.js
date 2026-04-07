@@ -311,9 +311,14 @@ client.on('guildCreate', async (guild) => {
 
 // ─── Mensajes (IA y Niveles) ────────────────────────────────────────
 client.on('messageCreate', async (message) => {
+  console.log(`[MESSAGE] Mensaje recibido de ${message.author.username} en ${message.guild ? message.guild.name : 'DM'}`);
+
   try {
     // Ignorar bots
-    if (message.author.bot) return;
+    if (message.author.bot) {
+      console.log('[MESSAGE] Ignorando mensaje de bot');
+      return;
+    }
 
     // Obtener configuración del servidor
     let guildConfig = null;
@@ -321,8 +326,12 @@ client.on('messageCreate', async (message) => {
       guildConfig = await getConfig(message.guild.id);
     }
 
+    console.log(`[MESSAGE] Llamando a handleIA con guildConfig: ${guildConfig ? 'sí' : 'no'}`);
+
     // Manejar IA (funciona en DMs y servidores)
     const iaHandled = await handleIA(message, globalConfig, guildConfig);
+    console.log(`[MESSAGE] handleIA retornó: ${iaHandled}`);
+
     if (iaHandled) {
       console.log('[MESSAGE] IA manejó el mensaje, no procesando niveles');
       return;
