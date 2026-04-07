@@ -11,7 +11,11 @@ const MAX_CONTENT_LENGTH = 1000;
 
 function getGroqKeys(config) {
   const raw = config.GROQ_KEYS || config.GROQ_KEY || '';
-  return String(raw).split(',').map(k => k.trim()).filter(Boolean);
+  const keys = String(raw).split(',').map(k => k.trim()).filter(Boolean);
+  if (keys.length === 0) {
+    console.warn('[IA] ADVERTENCIA: No se encontraron GROQ_KEYS en variables de entorno');
+  }
+  return keys;
 }
 
 function formatTimeRemaining(milliseconds) {
@@ -43,13 +47,17 @@ function recordUsage(id) {
 export async function handleIA(message, globalConfig, guildConfig) {
   if (message.author.bot) return false;
 
+  const isDM = message.channel.isDMBased();
+  const isMentioned = message.mentions.has(message.client.user);
+
+  console.log(`[IA] Mensaje recibido - DM: ${isDM}, Mencionado: ${isMentioned}, Usuario: ${message.author.username}`);
+
   // Validar permisos
   if (message.guild && !message.guild.members.me.permissionsIn(message.channel).has(PermissionFlagsBits.SendMessages)) {
+    console.log('[IA] Sin permisos para responder en este canal');
     return false;
   }
 
-  const isDM = message.channel.isDMBased();
-  const isMentioned = message.mentions.has(message.client.user);
   const userId = message.author.id;
   const userName = message.author.username;
   const userTag = message.author.tag;
@@ -57,12 +65,18 @@ export async function handleIA(message, globalConfig, guildConfig) {
 
   // Validar si debe responder
   if (!isDM) {
-    if (!guildConfig?.ia_enabled || !isMentioned) return false;
+    if (!guildConfig?.ia_enabled || !isMentioned) {
+      console.log(`[IA] No responde - IA habilitada: ${guildConfig?.ia_enabled}, Mencionado: ${isMentioned}`);
+      return false;
+    }
   }
 
   // Filtrar mensajes inútiles
   const userContent = message.content.replace(/<@!?\d+>/g, '').trim();
-  if (userContent.length < 3) return false;
+  if (userContent.length < 3) {
+    console.log('[IA] Mensaje muy corto, ignorando');
+    return false;
+  }
 
   // Limitar longitud
   if (userContent.length > MAX_CONTENT_LENGTH) {
@@ -71,7 +85,12 @@ export async function handleIA(message, globalConfig, guildConfig) {
   }
 
   const keys = getGroqKeys(globalConfig);
-  if (!keys.length) return false;
+  if (!keys.length) {
+    console.error('[IA] ERROR: No hay claves de Groq configuradas. Agrega GROQ_KEYS a las variables de entorno.');
+    return false;
+  }
+
+  console.log(`[IA] Procesando mensaje de ${userName} (${isDM ? 'DM' : 'Servidor'})`);
 
   const currentLimit = isDM ? LIMIT_DMS : LIMIT_SERVER;
   const spamCheck = checkSpam(limitId, currentLimit);
